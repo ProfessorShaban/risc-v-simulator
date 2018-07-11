@@ -1,0 +1,11 @@
+*.exe
+*.zip
+a.out
+Qt
+*.o
+Makefile
+.qmake.stash
+moc_*
+RISCV.pro.user
+RISCV/*
+RISCV.app*

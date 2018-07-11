@@ -1,0 +1,84 @@
+
+Load
+----
+
+Supported: LB, LH, LW, LD, LBU, LHU, LWU
+Not supported: LDU
+
+Store
+-----
+
+Supported: SB, SH, SW, SD
+
+Shift
+-----
+
+Supported: SLL, SLLW, SLLI, SLLIW, SRL, SRLW, SRLI, SRLIW, SRA, SRAW, SRAI, SRAIW
+Not supported: the D variants (e.g., SLLD)
+
+Arithmetic
+----------
+
+Supported: ADD, ADDW, ADDI, ADDIW, SUB, SUBW, LUI, AUIPC
+Not supported: the D variants (e.g., ADDD)
+
+Logical
+-------
+
+Supported: XOR, XORI, OR, ORI, AND, ANDI
+
+Compare
+-------
+
+Supported: SLT, SLTI, SLTU, SLTIU
+
+Branch
+------
+
+Supported: BEQ, BNE, BLT, GTE, BLTU, BGEU
+
+Jump and Link
+-------------
+
+Supported: JAL, JALR
+
+Multiply/Divide
+---------------
+
+Supported: MUL, MULW, DIV, DIVW, DIVU, REM, REMW, REMU, REMUW
+Not supported: the D variants (e.g., MULD)
+Not supported: the upper half multiply instructions (e.g., MULH)
+
+Floating Point Load
+-------------------
+
+Supported: FLW, FLD
+
+Floating Point Store
+--------------------
+
+Supported: FSW, FSD
+
+Floating Point Convert
+----------------------
+
+Supported: FCVT.S.W, FCVT.D.L, FCVT.W.S, FCVT.L.D
+Not supported: the rest of the FCVT instructions
+
+Floating Point Arithmetic
+-------------------------
+
+Supported: FADD.S, FADD.D, FSUB.S, FSUB.D, FMUL.S, FMUL.D, FDIV.S, FDIV.D, FSQRT.S, FSQRT.D
+
+Floating Point Compare
+----------------------
+
+Supported: FEQ.S, FEQ.D, FLT.S, FLT.D, FLE.S, FLE.D
+Not supported: The remaining floating point instructions (move, categorization, configuration, sign inject, min/max, mul-add)
+Not supported: Floating point control and status registers
+
+Pseudoinstructions
+------------------
+
+Supported: J, MV, NOP
+Not supported: the rest of the pseudoinstructions

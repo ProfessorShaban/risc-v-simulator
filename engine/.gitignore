@@ -1,0 +1,4 @@
+*.exe
+*.zip
+a.out
+a.out.dSYM*
