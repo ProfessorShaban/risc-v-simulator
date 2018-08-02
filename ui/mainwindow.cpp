@@ -420,6 +420,7 @@ void MainWindow::createActions()
     connect(animateAct, &QAction::triggered, this, &MainWindow::doAnimate);
     runMenu->addAction(animateAct);
     runToolBar->addAction(animateAct);
+    animateAct->setText(QString("Start/Stop &Animation"));
 
     QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
     QAction *aboutAct = helpMenu->addAction(tr("&About"), this, &MainWindow::about);
@@ -430,12 +431,10 @@ void MainWindow::doAnimate()
 {
     if (animating) {
         animating = false;
-        animateAct->setText(QString("Start &Animation"));
     }
     else {
         animating = true;
         timerId = startTimer(animateMilliseconds);
-        animateAct->setText(QString("Stop &Animation"));
     }
 }
 
