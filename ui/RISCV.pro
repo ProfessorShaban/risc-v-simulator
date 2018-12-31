@@ -36,7 +36,8 @@ SOURCES += \
     ../engine/utils.c \
     explaindialog.cpp \
     explainintdialog.cpp \
-    explainfloatdialog.cpp
+    explainfloatdialog.cpp \
+    changeregisterdialog.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -51,7 +52,8 @@ HEADERS += \
     ../engine/utils.h \
     explaindialog.h \
     explainintdialog.h \
-    explainfloatdialog.h
+    explainfloatdialog.h \
+    changeregisterdialog.h
 
 FORMS += \
         mainwindow.ui \
@@ -59,7 +61,8 @@ FORMS += \
     readlinedialog.ui \
     explaindialog.ui \
     explainintdialog.ui \
-    explainfloatdialog.ui
+    explainfloatdialog.ui \
+    changeregisterdialog.ui
 
 RESOURCES += \
     application.qrc
@@ -95,3 +98,6 @@ CONFIG     += debug
 CONFIG += static
 # QMAKE_LFLAGS += -static-libgcc -static-libstdc++
 QMAKE_LFLAGS += -static-libstdc++
+
+# marwan 12-31-18 - had to add this, for it to find the latest sdk
+QMAKE_MAC_SDK = macosx10.14

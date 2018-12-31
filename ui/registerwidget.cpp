@@ -1,10 +1,20 @@
+
 #include <QPainter>
+#include <QtWidgets>
+
 #include "registerwidget.h"
 #include "mainwindow.h"
+#include "changeregisterdialog.h"
 
 
 RegisterWidget::RegisterWidget()
 {
+    QString maxString("x01: 0x0000000000000000");
+    QFont font ("Courier New");
+    QFontMetrics fm(font);
+    int textWidth = fm.width(maxString);
+    registerWidth = textWidth + 4;
+    registerHeight = 16;
 }
 
 void RegisterWidget::paintEvent(QPaintEvent *)
@@ -72,6 +82,8 @@ void RegisterWidget::paintEvent(QPaintEvent *)
         if (isGreen)
             p.fillRect(x - 2, y - 11, textWidth + 4, 16, green);
         p.drawText(x, y, *str);
+        registerXPos[i] = x;
+        registerYPos[i] = y;
     }
 
     double *fregisters = get_fregisters(sim);
@@ -112,6 +124,8 @@ void RegisterWidget::paintEvent(QPaintEvent *)
         if (isGreen)
             p.fillRect(x - 2, y - 11, textWidth + 4, 16, green);
         p.drawText(x, y, *str);
+        registerXPos[i+32] = x;
+        registerYPos[i+32] = y;
     }
 }
 
@@ -165,4 +179,50 @@ void RegisterWidget::containerSizeChanged(int width)
     }
 
     update();
+}
+
+int RegisterWidget::registerNumber(int x, int y)
+{
+    for (int i = 0; i < 64; i++)
+        if (x >= registerXPos[i] && x <= registerXPos[i] + registerWidth && y >= registerYPos[i] && y <= registerYPos[i] + registerHeight)
+            return i;
+    return -1;
+}
+
+void RegisterWidget::showContextMenu(const QPoint &pos)
+{
+    clickPos = pos;
+
+    int enable = registerNumber(clickPos.x(), clickPos.y()) != -1;
+
+    QMenu contextMenu(tr("RegisterContextMenu"), this);
+
+    QAction changeRegisterAct("Change This Register", this);
+    connect(&changeRegisterAct, SIGNAL(triggered()), this, SLOT(changeRegister()));
+    changeRegisterAct.setEnabled(enable);
+    contextMenu.addAction(&changeRegisterAct);
+
+    contextMenu.exec(mapToGlobal(pos));
+}
+
+void RegisterWidget::changeRegister()
+{
+    int registerNum = registerNumber(clickPos.x(), clickPos.y());
+    if (registerNum == -1)
+        return;
+
+    if (registerNum < 32) {
+        unsigned long long *registers = get_registers(sim);
+        unsigned long long registerValue = registers[registerNum];
+
+        changeregisterdialog *dialog = new changeregisterdialog(this /* parent */);
+        dialog -> Initialize(registerNum, registerValue);
+        if (dialog -> exec() == QDialog::Accepted)
+            registers[registerNum] = dialog -> GetRegisterValue();
+    }
+    else {
+        double *fregisters = get_fregisters(sim);
+        double registerValue = fregisters[registerNum];
+//???
+    }
 }
