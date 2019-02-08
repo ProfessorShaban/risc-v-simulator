@@ -34,7 +34,7 @@ void RegisterWidget::paintEvent(QPaintEvent *)
     QColor green = QColor(180,255,180);
 
     char chStr[100];
-    sprintf (chStr, "PC:  %d", (int) get_pc(sim));
+    sprintf (chStr, "PC:  %d", static_cast<int>(get_pc(sim)));
     QString *str = new QString(chStr);
     p.fillRect(10 - 2, 16 - 11, textWidth + 4, 16, green);
     p.drawText(10, 16, *str);
@@ -97,7 +97,7 @@ void RegisterWidget::paintEvent(QPaintEvent *)
         while (nonspaceIndex < strlen(padded) && padded[nonspaceIndex] == ' ')
             nonspaceIndex++;
         strcpy(padded, &padded[nonspaceIndex]);
-        size_t len = (int) strlen(padded);
+        size_t len = static_cast<size_t>(strlen(padded));
         for (size_t i = 0; i < nonspaceIndex; i++)
             padded[len + i] = ' ';
         padded[len + nonspaceIndex] = 0;
@@ -131,7 +131,7 @@ void RegisterWidget::paintEvent(QPaintEvent *)
 
 bool RegisterWidget::getIsGreen(int registerNumber)
 {
-    MainWindow *theMainWindow = (MainWindow *) mainWindow;
+    MainWindow *theMainWindow = static_cast<MainWindow *>(mainWindow);
     for (int i = 0; i < theMainWindow -> deltas_used; i++)
         if (theMainWindow -> deltas[i].type == register_delta && theMainWindow -> deltas[i].register_number == registerNumber)
             return true;
@@ -140,7 +140,7 @@ bool RegisterWidget::getIsGreen(int registerNumber)
 
 bool RegisterWidget::getIsFGreen(int registerNumber)
 {
-    MainWindow *theMainWindow = (MainWindow *) mainWindow;
+    MainWindow *theMainWindow = static_cast<MainWindow *>(mainWindow);
     for (int i = 0; i < theMainWindow -> deltas_used; i++)
         if (theMainWindow -> deltas[i].type == fregister_delta && theMainWindow -> deltas[i].register_number == registerNumber)
             return true;
@@ -221,8 +221,8 @@ void RegisterWidget::changeRegister()
             registers[registerNum] = dialog -> GetRegisterValue();
     }
     else {
-        double *fregisters = get_fregisters(sim);
-        double registerValue = fregisters[registerNum];
+//        double *fregisters = get_fregisters(sim);
+//        double registerValue = fregisters[registerNum];
 //???
     }
 }

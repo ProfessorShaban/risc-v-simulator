@@ -16,7 +16,7 @@ public:
     void Initialize(simulator sim, void *mainWindow);
     void containerSizeChanged(int width);
 
-    void paintEvent(QPaintEvent *);
+    void paintEvent(QPaintEvent *) override;
 
     simulator sim;
     void *mainWindow = 0;
