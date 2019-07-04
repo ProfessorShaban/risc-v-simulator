@@ -98,7 +98,7 @@ void explainfloatdialog::widgetPaintEvent(QPaintEvent *)
     painter.setPen(Qt::black);
 
     int width = contentsRect().width() - 40;
-    char str[200];
+    char str[400]; // double precision floating point number has max exponent of 308, I think
     int xBitPos[64];
     int bits[64];
     int index = 0;
@@ -147,11 +147,11 @@ void explainfloatdialog::widgetPaintEvent(QPaintEvent *)
 
     QFontMetrics fm (painter.font());
     y += 18 * 9;
-    sprintf(str, "= %f * 2 ^ %d", (float) fraction, exponent);
-    int strWidth = fm.width(QString(str));
+    sprintf(str, "= %.20f * 2 ^ %d", (float) fraction, exponent);
+    int strWidth = fm.horizontalAdvance(QString(str));
     drawStringAt(&painter, str, width - strWidth - 24, y);
     y += 18;
-    sprintf(str, "= %f", fraction * pow(2,exponent));
-    strWidth = fm.width(QString(str));
+    sprintf(str, "= %.20f", fraction * pow(2,exponent));
+    strWidth = fm.horizontalAdvance(QString(str));
     drawStringAt(&painter, str, width - strWidth - 24, y);
 }
