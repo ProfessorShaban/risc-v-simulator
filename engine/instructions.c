@@ -28,22 +28,22 @@ void execute_load (simulator_internal *simi, assembly_instruction *instruction, 
 	}
     if (operation == INSTRUCTION_LW || operation == INSTRUCTION_LWU) {
 		unsigned long long num =
-            static_cast<unsigned long long>(simi -> memory[address]) |
-            (static_cast<unsigned long long>(simi -> memory[address + 1]) << 8) |
-            (static_cast<unsigned long long>(simi -> memory[address + 2]) << 16) |
-            (static_cast<unsigned long long>(simi -> memory[address + 3]) << 24);
+            (unsigned long long)(simi -> memory[address]) |
+            ((unsigned long long)(simi -> memory[address + 1]) << 8) |
+            ((unsigned long long)(simi -> memory[address + 2]) << 16) |
+            ((unsigned long long)(simi -> memory[address + 3]) << 24);
 		simi -> reg [instruction -> rd] = operation == INSTRUCTION_LW ? sign_extend(num, 32) : num;
 	}
 	if (operation == INSTRUCTION_LD) {
 		unsigned long long num =
-            static_cast<unsigned long long>(simi -> memory[address]) |
-            (static_cast<unsigned long long>(simi -> memory[address + 1]) << 8) |
-            (static_cast<unsigned long long>(simi -> memory[address + 2]) << 16) |
-            (static_cast<unsigned long long>(simi -> memory[address + 3]) << 24) |
-            ((static_cast<unsigned long long>(simi -> memory[address + 4])) << 32) |
-            ((static_cast<unsigned long long>(simi -> memory[address + 5])) << 40) |
-            ((static_cast<unsigned long long>(simi -> memory[address + 6])) << 48) |
-            ((static_cast<unsigned long long>(simi -> memory[address + 7])) << 56);
+            (unsigned long long)(simi -> memory[address]) |
+            ((unsigned long long)(simi -> memory[address + 1]) << 8) |
+            ((unsigned long long)(simi -> memory[address + 2]) << 16) |
+            ((unsigned long long)(simi -> memory[address + 3]) << 24) |
+            (((unsigned long long)(simi -> memory[address + 4])) << 32) |
+            (((unsigned long long)(simi -> memory[address + 5])) << 40) |
+            (((unsigned long long)(simi -> memory[address + 6])) << 48) |
+            (((unsigned long long)(simi -> memory[address + 7])) << 56);
 		simi -> reg [instruction -> rd] = num;
 	}
 
