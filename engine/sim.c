@@ -18,12 +18,30 @@ typedef struct {
 	int operation;
 } instruction_format;
 
+typedef struct {
+    char *mnemonic;
+    int index;  // index into instruction format array
+} instruction_index_entry;
+
+typedef struct {
+    int opcode;
+    int funct3;
+    int funct7;
+    int check_funct3;
+    int check_funct7;
+    int index;  // index into instruction format array
+} instruction_index_opcode_entry;
+
 
 #define NUM_INSTRUCTIONS 200
 instruction_format instruction_formats[NUM_INSTRUCTIONS];
+instruction_index_entry instruction_index[NUM_INSTRUCTIONS];
+instruction_index_opcode_entry instruction_opcode_index[NUM_INSTRUCTIONS];
+
+int instruction_count = 0;
 
 
-void initialize_format (instruction_format *format, char* mnemonic, int operation, char format_code, int opcode,
+void initialize_format (int *array_index, instruction_format *format, char* mnemonic, int operation, char format_code, int opcode,
 	int funct3, int check_funct3, int funct7, int check_funct7)
 {
     format -> format = format_code;
@@ -34,6 +52,48 @@ void initialize_format (instruction_format *format, char* mnemonic, int operatio
     format -> check_funct7 = check_funct7;
 	format -> check_funct3 = check_funct3;
 	format -> operation = operation;
+
+    // also add to the index
+    instruction_index[*array_index].index = *array_index;
+    instruction_index[*array_index].mnemonic = mnemonic;
+
+    // add to the opcode index
+    instruction_opcode_index[*array_index].index = *array_index;
+    instruction_opcode_index[*array_index].opcode = format -> opcode;
+    instruction_opcode_index[*array_index].funct3 = format -> funct3;
+    instruction_opcode_index[*array_index].check_funct3 = format -> check_funct3;
+    instruction_opcode_index[*array_index].funct7 = format -> funct7;
+    instruction_opcode_index[*array_index].check_funct7 = format -> check_funct7;
+
+    (*array_index)++;
+}
+
+int compare_index_entries(const void* a, const void* b)
+{
+     return stricmp(((instruction_index_entry*) a)->mnemonic, ((instruction_index_entry*) b)->mnemonic);
+}
+
+int compare_opcode_index_entries(const void* a, const void* b)
+{
+    instruction_index_opcode_entry* a_entry = (instruction_index_opcode_entry *) a;
+    instruction_index_opcode_entry* b_entry = (instruction_index_opcode_entry *) b;
+
+    if (a_entry->opcode > b_entry->opcode)
+        return 1;
+    if (a_entry->opcode < b_entry->opcode)
+        return -1;
+
+    if (a_entry->funct3 > b_entry->funct3)
+        return 1;
+    if (a_entry->funct3 < b_entry->funct3)
+        return -1;
+
+    if (a_entry->funct7 > b_entry->funct7)
+        return 1;
+    if (a_entry->funct7 < b_entry->funct7)
+        return -1;
+
+    return 0;
 }
 
 void initialize_formats()
@@ -44,138 +104,144 @@ void initialize_formats()
     int i = 0;
 
 	// load
-	initialize_format (&instruction_formats[i++], "lb", INSTRUCTION_LB, 'I', 0x03, 0, 1, 0, 0);
-	initialize_format (&instruction_formats[i++], "lh", INSTRUCTION_LH, 'I', 0x03, 1, 1, 0, 0);
-	initialize_format (&instruction_formats[i++], "lw", INSTRUCTION_LW, 'I', 0x03, 2, 1, 0, 0);
-	initialize_format (&instruction_formats[i++], "ld", INSTRUCTION_LD, 'I', 0x03, 3, 1, 0, 0);
-	initialize_format (&instruction_formats[i++], "lbu", INSTRUCTION_LBU, 'I', 0x03, 4, 1, 0, 0);
-	initialize_format (&instruction_formats[i++], "lhu", INSTRUCTION_LHU, 'I', 0x03, 5, 1, 0, 0);
-	initialize_format (&instruction_formats[i++], "lwu", INSTRUCTION_LWU, 'I', 0x03, 6, 1, 0, 0);
-	//initialize_format (&instruction_formats[i++], "ldu", INSTRUCTION_LDU, 'I', 0x03, 0, 1, 0, 0);
+    initialize_format (&i, &instruction_formats[i], "lb", INSTRUCTION_LB, 'I', 0x03, 0, 1, 0, 0);
+    initialize_format (&i, &instruction_formats[i], "lh", INSTRUCTION_LH, 'I', 0x03, 1, 1, 0, 0);
+    initialize_format (&i, &instruction_formats[i], "lw", INSTRUCTION_LW, 'I', 0x03, 2, 1, 0, 0);
+    initialize_format (&i, &instruction_formats[i], "ld", INSTRUCTION_LD, 'I', 0x03, 3, 1, 0, 0);
+    initialize_format (&i, &instruction_formats[i], "lbu", INSTRUCTION_LBU, 'I', 0x03, 4, 1, 0, 0);
+    initialize_format (&i, &instruction_formats[i], "lhu", INSTRUCTION_LHU, 'I', 0x03, 5, 1, 0, 0);
+    initialize_format (&i, &instruction_formats[i], "lwu", INSTRUCTION_LWU, 'I', 0x03, 6, 1, 0, 0);
+    //initialize_format (&i, &instruction_formats[i], "ldu", INSTRUCTION_LDU, 'I', 0x03, 0, 1, 0, 0);
 
 	// store
-	initialize_format (&instruction_formats[i++], "sb", INSTRUCTION_SB, 'S', 0x23, 0, 1, 0, 0);
-	initialize_format (&instruction_formats[i++], "sh", INSTRUCTION_SH, 'S', 0x23, 1, 1, 0, 0);
-	initialize_format (&instruction_formats[i++], "sw", INSTRUCTION_SW, 'S', 0x23, 2, 1, 0, 0);
-	initialize_format (&instruction_formats[i++], "sd", INSTRUCTION_SD, 'S', 0x23, 3, 1, 0, 0);
+    initialize_format (&i, &instruction_formats[i], "sb", INSTRUCTION_SB, 'S', 0x23, 0, 1, 0, 0);
+    initialize_format (&i, &instruction_formats[i], "sh", INSTRUCTION_SH, 'S', 0x23, 1, 1, 0, 0);
+    initialize_format (&i, &instruction_formats[i], "sw", INSTRUCTION_SW, 'S', 0x23, 2, 1, 0, 0);
+    initialize_format (&i, &instruction_formats[i], "sd", INSTRUCTION_SD, 'S', 0x23, 3, 1, 0, 0);
 
 	// shift
-	initialize_format (&instruction_formats[i++], "sll", INSTRUCTION_SLL, 'R', 0x33, 1, 1, 0, 1);
-	initialize_format (&instruction_formats[i++], "sllw", INSTRUCTION_SLLW, 'R', 0x3B, 1, 1, 0, 1);
-	//initialize_format (&instruction_formats[i++], "slld", INSTRUCTION_SLLD, 'R', 0x3B, 1, 1, 0, 1);
-	initialize_format (&instruction_formats[i++], "slli", INSTRUCTION_SLLI, 'X', 0x13, 1, 1, 0, 1);
-	initialize_format (&instruction_formats[i++], "slliw", INSTRUCTION_SLLIW, 'X', 0x1B, 1, 1, 0, 1);
-	//initialize_format (&instruction_formats[i++], "sllid", INSTRUCTION_SLLID, 'X', 0x3B, 1, 1, 0, 1);
-	initialize_format (&instruction_formats[i++], "srl", INSTRUCTION_SRL, 'R', 0x33, 5, 1, 0, 1);
-	initialize_format (&instruction_formats[i++], "srlw", INSTRUCTION_SRLW, 'R', 0x3B, 5, 1, 0, 1);
-	//initialize_format (&instruction_formats[i++], "srld", INSTRUCTION_SRLD, 'R', 0x3B, 1, 1, 0, 1);
-	initialize_format (&instruction_formats[i++], "srli", INSTRUCTION_SRLI, 'X', 0x13, 5, 1, 0, 1);
-	initialize_format (&instruction_formats[i++], "srliw", INSTRUCTION_SRLIW, 'X', 0x1B, 5, 1, 0, 1);
-	//initialize_format (&instruction_formats[i++], "srlid", INSTRUCTION_SRLID, 'X', 0x3B, 1, 1, 0, 1);
-	initialize_format (&instruction_formats[i++], "sra", INSTRUCTION_SRA, 'R', 0x33, 5, 1, 20, 1);
-	initialize_format (&instruction_formats[i++], "sraw", INSTRUCTION_SRAW, 'R', 0x3B, 5, 1, 20, 1);
-	//initialize_format (&instruction_formats[i++], "srad", INSTRUCTION_SRAD, 'R', 0x3B, 1, 1, 0, 1);
-	initialize_format (&instruction_formats[i++], "srai", INSTRUCTION_SRAI, 'X', 0x13, 5, 1, 20, 1);
-	initialize_format (&instruction_formats[i++], "sraiw", INSTRUCTION_SRAIW, 'X', 0x1B, 5, 1, 20, 1);
-	//initialize_format (&instruction_formats[i++], "sraid", INSTRUCTION_SRAID, 'X', 0x3B, 1, 1, 0, 1);
+    initialize_format (&i, &instruction_formats[i], "sll", INSTRUCTION_SLL, 'R', 0x33, 1, 1, 0, 1);
+    initialize_format (&i, &instruction_formats[i], "sllw", INSTRUCTION_SLLW, 'R', 0x3B, 1, 1, 0, 1);
+    //initialize_format (&i, &instruction_formats[i], "slld", INSTRUCTION_SLLD, 'R', 0x3B, 1, 1, 0, 1);
+    initialize_format (&i, &instruction_formats[i], "slli", INSTRUCTION_SLLI, 'X', 0x13, 1, 1, 0, 1);
+    initialize_format (&i, &instruction_formats[i], "slliw", INSTRUCTION_SLLIW, 'X', 0x1B, 1, 1, 0, 1);
+    //initialize_format (&i, &instruction_formats[i], "sllid", INSTRUCTION_SLLID, 'X', 0x3B, 1, 1, 0, 1);
+    initialize_format (&i, &instruction_formats[i], "srl", INSTRUCTION_SRL, 'R', 0x33, 5, 1, 0, 1);
+    initialize_format (&i, &instruction_formats[i], "srlw", INSTRUCTION_SRLW, 'R', 0x3B, 5, 1, 0, 1);
+    //initialize_format (&i, &instruction_formats[i], "srld", INSTRUCTION_SRLD, 'R', 0x3B, 1, 1, 0, 1);
+    initialize_format (&i, &instruction_formats[i], "srli", INSTRUCTION_SRLI, 'X', 0x13, 5, 1, 0, 1);
+    initialize_format (&i, &instruction_formats[i], "srliw", INSTRUCTION_SRLIW, 'X', 0x1B, 5, 1, 0, 1);
+    //initialize_format (&i, &instruction_formats[i], "srlid", INSTRUCTION_SRLID, 'X', 0x3B, 1, 1, 0, 1);
+    initialize_format (&i, &instruction_formats[i], "sra", INSTRUCTION_SRA, 'R', 0x33, 5, 1, 20, 1);
+    initialize_format (&i, &instruction_formats[i], "sraw", INSTRUCTION_SRAW, 'R', 0x3B, 5, 1, 20, 1);
+    //initialize_format (&i, &instruction_formats[i], "srad", INSTRUCTION_SRAD, 'R', 0x3B, 1, 1, 0, 1);
+    initialize_format (&i, &instruction_formats[i], "srai", INSTRUCTION_SRAI, 'X', 0x13, 5, 1, 20, 1);
+    initialize_format (&i, &instruction_formats[i], "sraiw", INSTRUCTION_SRAIW, 'X', 0x1B, 5, 1, 20, 1);
+    //initialize_format (&i, &instruction_formats[i], "sraid", INSTRUCTION_SRAID, 'X', 0x3B, 1, 1, 0, 1);
 
 	// arithmetic
-	initialize_format (&instruction_formats[i++], "add", INSTRUCTION_ADD, 'R', 0x33, 0, 1, 0, 1);
-	initialize_format (&instruction_formats[i++], "addw", INSTRUCTION_ADDW, 'R', 0x3B, 0, 1, 0, 1);
-	//initialize_format (&instruction_formats[i++], "addd", INSTRUCTION_ADDD, 'R', 0x33, 0, 1, 0, 1);
-	initialize_format (&instruction_formats[i++], "addi", INSTRUCTION_ADDI, 'I', 0x13, 0, 1, 0, 0);
-	initialize_format (&instruction_formats[i++], "addiw", INSTRUCTION_ADDIW, 'I', 0x1B, 0, 1, 0, 0);
-	//initialize_format (&instruction_formats[i++], "addid", INSTRUCTION_ADDID, 'I', 0x33, 0, 1, 0, 1);
-	initialize_format (&instruction_formats[i++], "sub", INSTRUCTION_SUB, 'R', 0x33, 0, 1, 0x20, 1);
-	initialize_format (&instruction_formats[i++], "subw", INSTRUCTION_SUBW, 'R', 0x3B, 0, 1, 20, 1);
-	//initialize_format (&instruction_formats[i++], "subd", INSTRUCTION_SUBD, 'R', 0x33, 0, 1, 0, 1);
-	initialize_format (&instruction_formats[i++], "lui", INSTRUCTION_LUI, 'U', 0x37, 0, 0, 0, 0);
-	initialize_format (&instruction_formats[i++], "auipc", INSTRUCTION_AUIPC, 'U', 0x17, 0, 0, 0, 0);
+    initialize_format (&i, &instruction_formats[i], "add", INSTRUCTION_ADD, 'R', 0x33, 0, 1, 0, 1);
+    initialize_format (&i, &instruction_formats[i], "addw", INSTRUCTION_ADDW, 'R', 0x3B, 0, 1, 0, 1);
+    //initialize_format (&i, &instruction_formats[i], "addd", INSTRUCTION_ADDD, 'R', 0x33, 0, 1, 0, 1);
+    initialize_format (&i, &instruction_formats[i], "addi", INSTRUCTION_ADDI, 'I', 0x13, 0, 1, 0, 0);
+    initialize_format (&i, &instruction_formats[i], "addiw", INSTRUCTION_ADDIW, 'I', 0x1B, 0, 1, 0, 0);
+    //initialize_format (&i, &instruction_formats[i], "addid", INSTRUCTION_ADDID, 'I', 0x33, 0, 1, 0, 1);
+    initialize_format (&i, &instruction_formats[i], "sub", INSTRUCTION_SUB, 'R', 0x33, 0, 1, 0x20, 1);
+    initialize_format (&i, &instruction_formats[i], "subw", INSTRUCTION_SUBW, 'R', 0x3B, 0, 1, 20, 1);
+    //initialize_format (&i, &instruction_formats[i], "subd", INSTRUCTION_SUBD, 'R', 0x33, 0, 1, 0, 1);
+    initialize_format (&i, &instruction_formats[i], "lui", INSTRUCTION_LUI, 'U', 0x37, 0, 0, 0, 0);
+    initialize_format (&i, &instruction_formats[i], "auipc", INSTRUCTION_AUIPC, 'U', 0x17, 0, 0, 0, 0);
 
 	// logical
-	initialize_format (&instruction_formats[i++], "xor", INSTRUCTION_XOR, 'R', 0x33, 4, 1, 0, 1);
-	initialize_format (&instruction_formats[i++], "xori", INSTRUCTION_XORI, 'I', 0x13, 4, 1, 0, 0);
-	initialize_format (&instruction_formats[i++], "or", INSTRUCTION_OR, 'R', 0x33, 6, 1, 0, 1);
-    initialize_format (&instruction_formats[i++], "ori", INSTRUCTION_ORI, 'I', 0x13, 6, 1, 0, 0);
-	initialize_format (&instruction_formats[i++], "and", INSTRUCTION_AND, 'R', 0x33, 7, 1, 0, 1);
-    initialize_format (&instruction_formats[i++], "andi", INSTRUCTION_ANDI, 'I', 0x13, 7, 1, 0, 0);
+    initialize_format (&i, &instruction_formats[i], "xor", INSTRUCTION_XOR, 'R', 0x33, 4, 1, 0, 1);
+    initialize_format (&i, &instruction_formats[i], "xori", INSTRUCTION_XORI, 'I', 0x13, 4, 1, 0, 0);
+    initialize_format (&i, &instruction_formats[i], "or", INSTRUCTION_OR, 'R', 0x33, 6, 1, 0, 1);
+    initialize_format (&i, &instruction_formats[i], "ori", INSTRUCTION_ORI, 'I', 0x13, 6, 1, 0, 0);
+    initialize_format (&i, &instruction_formats[i], "and", INSTRUCTION_AND, 'R', 0x33, 7, 1, 0, 1);
+    initialize_format (&i, &instruction_formats[i], "andi", INSTRUCTION_ANDI, 'I', 0x13, 7, 1, 0, 0);
 
 	// compare
-	initialize_format (&instruction_formats[i++], "slt", INSTRUCTION_SLT, 'R', 0x33, 2, 1, 0, 0);
-	initialize_format (&instruction_formats[i++], "slti", INSTRUCTION_SLTI, 'I', 0x13, 2, 1, 0, 0);
-	initialize_format (&instruction_formats[i++], "sltu", INSTRUCTION_SLTU, 'R', 0x33, 3, 1, 0, 0);
-	initialize_format (&instruction_formats[i++], "sltiu", INSTRUCTION_SLTIU, 'I', 0x13, 3, 1, 0, 0);
+    initialize_format (&i, &instruction_formats[i], "slt", INSTRUCTION_SLT, 'R', 0x33, 2, 1, 0, 0);
+    initialize_format (&i, &instruction_formats[i], "slti", INSTRUCTION_SLTI, 'I', 0x13, 2, 1, 0, 0);
+    initialize_format (&i, &instruction_formats[i], "sltu", INSTRUCTION_SLTU, 'R', 0x33, 3, 1, 0, 0);
+    initialize_format (&i, &instruction_formats[i], "sltiu", INSTRUCTION_SLTIU, 'I', 0x13, 3, 1, 0, 0);
 
 	// branch
-    initialize_format (&instruction_formats[i++], "beq", INSTRUCTION_BEQ, 'B', 0x63, 0, 1, 0, 0);
-    initialize_format (&instruction_formats[i++], "bne", INSTRUCTION_BNE, 'B', 0x63, 1, 1, 0, 0);
-    initialize_format (&instruction_formats[i++], "blt", INSTRUCTION_BLT, 'B', 0x63, 4, 1, 0, 0);
-	initialize_format (&instruction_formats[i++], "bge", INSTRUCTION_BGE, 'B', 0x63, 5, 1, 0, 0);
-    initialize_format (&instruction_formats[i++], "bltu", INSTRUCTION_BLTU, 'B', 0x63, 6, 1, 0, 0);
-    initialize_format (&instruction_formats[i++], "bgeu", INSTRUCTION_BGEU, 'B', 0x63, 7, 1, 0, 0);
+    initialize_format (&i, &instruction_formats[i], "beq", INSTRUCTION_BEQ, 'B', 0x63, 0, 1, 0, 0);
+    initialize_format (&i, &instruction_formats[i], "bne", INSTRUCTION_BNE, 'B', 0x63, 1, 1, 0, 0);
+    initialize_format (&i, &instruction_formats[i], "blt", INSTRUCTION_BLT, 'B', 0x63, 4, 1, 0, 0);
+    initialize_format (&i, &instruction_formats[i], "bge", INSTRUCTION_BGE, 'B', 0x63, 5, 1, 0, 0);
+    initialize_format (&i, &instruction_formats[i], "bltu", INSTRUCTION_BLTU, 'B', 0x63, 6, 1, 0, 0);
+    initialize_format (&i, &instruction_formats[i], "bgeu", INSTRUCTION_BGEU, 'B', 0x63, 7, 1, 0, 0);
 
 	// jump and link
-	initialize_format (&instruction_formats[i++], "jal", INSTRUCTION_JAL, 'J', 0x6F, 0, 0, 0, 0);
-	initialize_format (&instruction_formats[i++], "jalr", INSTRUCTION_JALR, 'I', 0x67, 0, 1, 0, 0);
+    initialize_format (&i, &instruction_formats[i], "jal", INSTRUCTION_JAL, 'J', 0x6F, 0, 0, 0, 0);
+    initialize_format (&i, &instruction_formats[i], "jalr", INSTRUCTION_JALR, 'I', 0x67, 0, 1, 0, 0);
 
 	// multiply/divide
- 	initialize_format (&instruction_formats[i++], "mul", INSTRUCTION_MUL, 'R', 0x33, 0, 1, 1, 1);
-	initialize_format (&instruction_formats[i++], "mulw", INSTRUCTION_MULW, 'R', 0x3B, 0, 1, 1, 1);
-	//initialize_format (&instruction_formats[i++], "muld", INSTRUCTION_MULD, 'R', 0x33, 0, 1, 1, 1);
-	initialize_format (&instruction_formats[i++], "mulh", INSTRUCTION_MULH, 'R', 0x33, 1, 1, 1, 1);
-	initialize_format (&instruction_formats[i++], "mulHSU", INSTRUCTION_MULHSU, 'R', 0x33, 2, 1, 1, 1);
-	initialize_format (&instruction_formats[i++], "mulhu", INSTRUCTION_MULHU, 'R', 0x33, 3, 1, 1, 1);
-	initialize_format (&instruction_formats[i++], "div", INSTRUCTION_DIV, 'R', 0x33, 4, 1, 1, 1);
-	initialize_format (&instruction_formats[i++], "divw", INSTRUCTION_DIVW, 'R', 0x3B, 4, 1, 1, 1);
-	//initialize_format (&instruction_formats[i++], "divd", INSTRUCTION_DIVD, 'R', 0x33, 0, 1, 1, 1);
-	initialize_format (&instruction_formats[i++], "divu", INSTRUCTION_DIVU, 'R', 0x33, 5, 1, 1, 1);
-	initialize_format (&instruction_formats[i++], "rem", INSTRUCTION_REM, 'R', 0x33, 6, 1, 1, 1);
-	initialize_format (&instruction_formats[i++], "remw", INSTRUCTION_REMW, 'R', 0x3B, 6, 1, 1, 1);
-	//initialize_format (&instruction_formats[i++], "remd", INSTRUCTION_REMD, 'R', 0x33, 0, 1, 1, 1);
-	initialize_format (&instruction_formats[i++], "remu", INSTRUCTION_REMU, 'R', 0x33, 7, 1, 1, 1);
-	initialize_format (&instruction_formats[i++], "remuw", INSTRUCTION_REMUW, 'R', 0x3B, 7, 1, 1, 1);
-	//initialize_format (&instruction_formats[i++], "remud", INSTRUCTION_REMUD, 'R', 0x33, 0, 1, 1, 1);
+    initialize_format (&i, &instruction_formats[i], "mul", INSTRUCTION_MUL, 'R', 0x33, 0, 1, 1, 1);
+    initialize_format (&i, &instruction_formats[i], "mulw", INSTRUCTION_MULW, 'R', 0x3B, 0, 1, 1, 1);
+    //initialize_format (&i, &instruction_formats[i], "muld", INSTRUCTION_MULD, 'R', 0x33, 0, 1, 1, 1);
+    initialize_format (&i, &instruction_formats[i], "mulh", INSTRUCTION_MULH, 'R', 0x33, 1, 1, 1, 1);
+    initialize_format (&i, &instruction_formats[i], "mulHSU", INSTRUCTION_MULHSU, 'R', 0x33, 2, 1, 1, 1);
+    initialize_format (&i, &instruction_formats[i], "mulhu", INSTRUCTION_MULHU, 'R', 0x33, 3, 1, 1, 1);
+    initialize_format (&i, &instruction_formats[i], "div", INSTRUCTION_DIV, 'R', 0x33, 4, 1, 1, 1);
+    initialize_format (&i, &instruction_formats[i], "divw", INSTRUCTION_DIVW, 'R', 0x3B, 4, 1, 1, 1);
+    //initialize_format (&i, &instruction_formats[i], "divd", INSTRUCTION_DIVD, 'R', 0x33, 0, 1, 1, 1);
+    initialize_format (&i, &instruction_formats[i], "divu", INSTRUCTION_DIVU, 'R', 0x33, 5, 1, 1, 1);
+    initialize_format (&i, &instruction_formats[i], "rem", INSTRUCTION_REM, 'R', 0x33, 6, 1, 1, 1);
+    initialize_format (&i, &instruction_formats[i], "remw", INSTRUCTION_REMW, 'R', 0x3B, 6, 1, 1, 1);
+    //initialize_format (&i, &instruction_formats[i], "remd", INSTRUCTION_REMD, 'R', 0x33, 0, 1, 1, 1);
+    initialize_format (&i, &instruction_formats[i], "remu", INSTRUCTION_REMU, 'R', 0x33, 7, 1, 1, 1);
+    initialize_format (&i, &instruction_formats[i], "remuw", INSTRUCTION_REMUW, 'R', 0x3B, 7, 1, 1, 1);
+    //initialize_format (&i, &instruction_formats[i], "remud", INSTRUCTION_REMUD, 'R', 0x33, 0, 1, 1, 1);
 
 	// floating point convert
-	initialize_format (&instruction_formats[i++], "fcvt.d.l", INSTRUCTION_FCVT_D_L, 'R', 0x53, 0, 0, 0x69, 1);
-	initialize_format (&instruction_formats[i++], "fcvt.l.d", INSTRUCTION_FCVT_L_D, 'R', 0x53, 0, 0, 0x61, 1);
-	initialize_format (&instruction_formats[i++], "fcvt.w.s", INSTRUCTION_FCVT_W_S, 'R', 0x53, 0, 0, 0x60, 1);
-	initialize_format (&instruction_formats[i++], "fcvt.s.w", INSTRUCTION_FCVT_S_W, 'R', 0x53, 0, 0, 0x68, 1);
+    initialize_format (&i, &instruction_formats[i], "fcvt.d.l", INSTRUCTION_FCVT_D_L, 'R', 0x53, 0, 0, 0x69, 1);
+    initialize_format (&i, &instruction_formats[i], "fcvt.l.d", INSTRUCTION_FCVT_L_D, 'R', 0x53, 0, 0, 0x61, 1);
+    initialize_format (&i, &instruction_formats[i], "fcvt.w.s", INSTRUCTION_FCVT_W_S, 'R', 0x53, 0, 0, 0x60, 1);
+    initialize_format (&i, &instruction_formats[i], "fcvt.s.w", INSTRUCTION_FCVT_S_W, 'R', 0x53, 0, 0, 0x68, 1);
 
 	// floating point load
-	initialize_format (&instruction_formats[i++], "fld", INSTRUCTION_FLD, 'I', 0x07, 3, 1, 0, 1);
-	initialize_format (&instruction_formats[i++], "flw", INSTRUCTION_FLW, 'I', 0x07, 2, 1, 0, 1);
+    initialize_format (&i, &instruction_formats[i], "fld", INSTRUCTION_FLD, 'I', 0x07, 3, 1, 0, 1);
+    initialize_format (&i, &instruction_formats[i], "flw", INSTRUCTION_FLW, 'I', 0x07, 2, 1, 0, 1);
 
 	// floating point store
-	initialize_format (&instruction_formats[i++], "fsd", INSTRUCTION_FSD, 'S', 0x27, 3, 1, 0, 0);
-	initialize_format (&instruction_formats[i++], "fsw", INSTRUCTION_FSW, 'S', 0x27, 2, 1, 0, 0);
+    initialize_format (&i, &instruction_formats[i], "fsd", INSTRUCTION_FSD, 'S', 0x27, 3, 1, 0, 0);
+    initialize_format (&i, &instruction_formats[i], "fsw", INSTRUCTION_FSW, 'S', 0x27, 2, 1, 0, 0);
 
 	// floating point arithmetic
-	initialize_format (&instruction_formats[i++], "fadd.d", INSTRUCTION_FADD_D, 'R', 0x53, 0, 0, 1, 1);
-	initialize_format (&instruction_formats[i++], "fsub.d", INSTRUCTION_FSUB_D, 'R', 0x53, 0, 0, 5, 1);
-	initialize_format (&instruction_formats[i++], "fmul.d", INSTRUCTION_FMUL_D, 'R', 0x53, 0, 0, 9, 1);
-	initialize_format (&instruction_formats[i++], "fdiv.d", INSTRUCTION_FDIV_D, 'R', 0x53, 0, 0, 13, 1);
-	initialize_format (&instruction_formats[i++], "fsqrt.d", INSTRUCTION_FSQRT_D, 'R', 0x53, 0, 0, 0x2d, 1);
- 	initialize_format (&instruction_formats[i++], "fadd.s", INSTRUCTION_FADD_S, 'R', 0x53, 0, 0, 0, 1);
-	initialize_format (&instruction_formats[i++], "fsub.s", INSTRUCTION_FSUB_S, 'R', 0x53, 0, 0, 4, 1);
-	initialize_format (&instruction_formats[i++], "fmul.s", INSTRUCTION_FMUL_S, 'R', 0x53, 0, 0, 8, 1);
-	initialize_format (&instruction_formats[i++], "fdiv.s", INSTRUCTION_FDIV_S, 'R', 0x53, 0, 0, 12, 1);
-	initialize_format (&instruction_formats[i++], "fsqrt.s", INSTRUCTION_FSQRT_S, 'R', 0x53, 0, 0, 0x2c, 1);
+    initialize_format (&i, &instruction_formats[i], "fadd.d", INSTRUCTION_FADD_D, 'R', 0x53, 0, 0, 1, 1);
+    initialize_format (&i, &instruction_formats[i], "fsub.d", INSTRUCTION_FSUB_D, 'R', 0x53, 0, 0, 5, 1);
+    initialize_format (&i, &instruction_formats[i], "fmul.d", INSTRUCTION_FMUL_D, 'R', 0x53, 0, 0, 9, 1);
+    initialize_format (&i, &instruction_formats[i], "fdiv.d", INSTRUCTION_FDIV_D, 'R', 0x53, 0, 0, 13, 1);
+    initialize_format (&i, &instruction_formats[i], "fsqrt.d", INSTRUCTION_FSQRT_D, 'R', 0x53, 0, 0, 0x2d, 1);
+    initialize_format (&i, &instruction_formats[i], "fadd.s", INSTRUCTION_FADD_S, 'R', 0x53, 0, 0, 0, 1);
+    initialize_format (&i, &instruction_formats[i], "fsub.s", INSTRUCTION_FSUB_S, 'R', 0x53, 0, 0, 4, 1);
+    initialize_format (&i, &instruction_formats[i], "fmul.s", INSTRUCTION_FMUL_S, 'R', 0x53, 0, 0, 8, 1);
+    initialize_format (&i, &instruction_formats[i], "fdiv.s", INSTRUCTION_FDIV_S, 'R', 0x53, 0, 0, 12, 1);
+    initialize_format (&i, &instruction_formats[i], "fsqrt.s", INSTRUCTION_FSQRT_S, 'R', 0x53, 0, 0, 0x2c, 1);
 
 	// floating point compare
-	initialize_format (&instruction_formats[i++], "feq.d", INSTRUCTION_FEQ_D, 'R', 0x53, 2, 1, 0x51, 1);
-	initialize_format (&instruction_formats[i++], "flt.d", INSTRUCTION_FLT_D, 'R', 0x53, 1, 1, 0x51, 1);
-	initialize_format (&instruction_formats[i++], "fle.d", INSTRUCTION_FLE_D, 'R', 0x53, 0, 1, 0x51, 1);
-	initialize_format (&instruction_formats[i++], "feq.s", INSTRUCTION_FEQ_S, 'R', 0x53, 2, 1, 0x50, 1);
-	initialize_format (&instruction_formats[i++], "flt.s", INSTRUCTION_FLT_S, 'R', 0x53, 1, 1, 0x50, 1);
-	initialize_format (&instruction_formats[i++], "fle.s", INSTRUCTION_FLE_S, 'R', 0x53, 0, 1, 0x50, 1);
+    initialize_format (&i, &instruction_formats[i], "feq.d", INSTRUCTION_FEQ_D, 'R', 0x53, 2, 1, 0x51, 1);
+    initialize_format (&i, &instruction_formats[i], "flt.d", INSTRUCTION_FLT_D, 'R', 0x53, 1, 1, 0x51, 1);
+    initialize_format (&i, &instruction_formats[i], "fle.d", INSTRUCTION_FLE_D, 'R', 0x53, 0, 1, 0x51, 1);
+    initialize_format (&i, &instruction_formats[i], "feq.s", INSTRUCTION_FEQ_S, 'R', 0x53, 2, 1, 0x50, 1);
+    initialize_format (&i, &instruction_formats[i], "flt.s", INSTRUCTION_FLT_S, 'R', 0x53, 1, 1, 0x50, 1);
+    initialize_format (&i, &instruction_formats[i], "fle.s", INSTRUCTION_FLE_S, 'R', 0x53, 0, 1, 0x50, 1);
 
 	// meta
-	initialize_format (&instruction_formats[i++], "outstr", INSTRUCTION_OUTSTR, 'M', 0x5a, 0, 1, 0, 1);
-	initialize_format (&instruction_formats[i++], "outln", INSTRUCTION_OUTLN, 'M', 0x5a, 0, 1, 1, 1);
-	initialize_format (&instruction_formats[i++], "outint", INSTRUCTION_OUTINT, 'M', 0x5a, 0, 1, 2, 1);
-	initialize_format (&instruction_formats[i++], "instr", INSTRUCTION_INSTR, 'M', 0x5a, 0, 1, 3, 1);
-	initialize_format (&instruction_formats[i++], "inint", INSTRUCTION_ININT, 'M', 0x5a, 0, 1, 4, 1);
+    initialize_format (&i, &instruction_formats[i], "outstr", INSTRUCTION_OUTSTR, 'M', 0x5a, 0, 1, 0, 1);
+    initialize_format (&i, &instruction_formats[i], "outln", INSTRUCTION_OUTLN, 'M', 0x5a, 0, 1, 1, 1);
+    initialize_format (&i, &instruction_formats[i], "outint", INSTRUCTION_OUTINT, 'M', 0x5a, 0, 1, 2, 1);
+    initialize_format (&i, &instruction_formats[i], "instr", INSTRUCTION_INSTR, 'M', 0x5a, 0, 1, 3, 1);
+    initialize_format (&i, &instruction_formats[i], "inint", INSTRUCTION_ININT, 'M', 0x5a, 0, 1, 4, 1);
+
+    instruction_count = i;
+
+    // sort indexes
+    qsort (instruction_index, instruction_count, sizeof(instruction_index_entry), compare_index_entries);
+    qsort (instruction_opcode_index, instruction_count, sizeof(instruction_index_opcode_entry), compare_opcode_index_entries);
 }
 
 simulator create_simulator(OutputString *outputStringCallback, InputString inputStringCallback)
@@ -354,12 +420,32 @@ double get_double(char *token, int *success)
 
 instruction_format* get_instruction_format (char* mnemonic)
 {
-    for (int i = 0; i < NUM_INSTRUCTIONS; i++) {
-        if (instruction_formats[i].opcode == 0)
-            return 0;
-        if (stricmp(mnemonic, instruction_formats[i].mnemonic) == 0)
-            return &instruction_formats[i];
+    // binary search for the mnemonic in the index
+    int high = instruction_count;
+    int low = 0;
+    while (low <= high) {
+        int mid = (low + high - 1) / 2;
+
+        // special case
+        if (high == low)
+            mid = high;
+
+        int compare = stricmp(mnemonic, instruction_index[mid].mnemonic);
+        if (compare == 0) {
+            int index = instruction_index[mid].index;
+            return &instruction_formats[index];
+        }
+
+        // special case continued
+        if (high == low)
+            break;
+
+        if (compare > 0)
+            low = mid + 1;
+        else
+            high = mid - 1;
     }
+
     return 0;
 }
 
@@ -1093,6 +1179,57 @@ assembly_instruction** assemble (simulator sim, const char *program, int address
 	return result;
 }
 
+instruction_format* find_instruction_format_by_opcode(int opcode, int funct3, int funct7) {
+
+    int high = instruction_count;
+    int low = 0;
+    while (low <= high) {
+        int mid = (low + high - 1) / 2;
+
+        // special case
+        if (high == low)
+            mid = high;
+
+        int compare = 0;
+        if (opcode > instruction_opcode_index[mid].opcode)
+            compare = 1;
+        else if (opcode < instruction_opcode_index[mid].opcode)
+            compare = -1;
+        else {
+            if (instruction_opcode_index[mid].check_funct3) {
+                if (funct3 > instruction_opcode_index[mid].funct3)
+                    compare = 1;
+                else if (funct3 < instruction_opcode_index[mid].funct3)
+                    compare = -1;
+                else {
+                    if (instruction_opcode_index[mid].check_funct7) {
+                        if (funct7 > instruction_opcode_index[mid].funct7)
+                            compare = 1;
+                        else if (funct7 < instruction_opcode_index[mid].funct7)
+                            compare = -1;
+                    }
+                }
+            }
+        }
+
+        if (compare == 0) {
+            int index = instruction_opcode_index[mid].index;
+            return &instruction_formats[index];
+        }
+
+        // special case continued
+        if (high == low)
+            break;
+
+        if (compare > 0)
+            low = mid + 1;
+        else
+            high = mid - 1;
+    }
+
+    return 0;
+}
+
 instruction_format* get_instruction_format_from_instruction (unsigned int mem, int opcode, int funct3,
     int funct7, int *imm31, int *imm11, int *rd, int *rs1, int *rs2)
 {
@@ -1103,13 +1240,22 @@ instruction_format* get_instruction_format_from_instruction (unsigned int mem, i
     *rs2 = 0;
 
     instruction_format *format = 0;
-	for (int i = 0; i < NUM_INSTRUCTIONS; i++)
-        if (instruction_formats[i].opcode == opcode &&
-				(!instruction_formats[i].check_funct3 || (instruction_formats[i].check_funct3 && instruction_formats[i].funct3 == funct3)) &&
-                (!instruction_formats[i].check_funct7 || (instruction_formats[i].check_funct7 && instruction_formats[i].funct7 == funct7))) {
-            format = &instruction_formats[i];
-            break;
-		}
+
+    // if it's a floating point instruction, we can't use binary search, since in some cases, funct3 is ignored
+    // and funct7 is checked, so we can't sort by opcode then funct3 then funct7
+    if (opcode >= INSTRUCTION_FMV_H_X && opcode <= INSTRUCTION_FLE_D) {
+        for (int i = 0; i < NUM_INSTRUCTIONS; i++)
+            if (instruction_formats[i].opcode == opcode &&
+                    (!instruction_formats[i].check_funct3 || (instruction_formats[i].check_funct3 && instruction_formats[i].funct3 == funct3)) &&
+                    (!instruction_formats[i].check_funct7 || (instruction_formats[i].check_funct7 && instruction_formats[i].funct7 == funct7))) {
+                format = &instruction_formats[i];
+                break;
+            }
+    }
+    else
+        // binary search of instructions, sorted by opcode/funct3/funct7
+        format = find_instruction_format_by_opcode(opcode, funct3, funct7);
+
     if (!format)
         return 0;
 

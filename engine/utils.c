@@ -38,12 +38,12 @@ int stricmp (const char *str1, const char *str2)
 {
 	unsigned long len1 = strlen(str1);
 	unsigned long len2 = strlen(str2);
-	if (len1 != len2)
-		return 1;
 
-	for (unsigned long i = 0; i < len1; i++)
-		if (tolower (str1[i]) != tolower (str2[i]))
+    for (unsigned long i = 0; i <= len1 && i <= len2; i++)
+        if (tolower (str1[i]) > tolower (str2[i]))
 			return 1;
+        else if (tolower (str1[i]) < tolower (str2[i]))
+            return -1;
 
 	return 0;
 }
