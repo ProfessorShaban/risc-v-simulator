@@ -23,6 +23,8 @@ void explaindialog::Initialize(assembly_instruction *instruction)
         sprintf(formatStr, "Format: UJ");
     else if (instruction->format == 'B')
         sprintf(formatStr, "Format: SB");
+    else if (instruction->format == 'X')
+        sprintf(formatStr, "Format: I (specialized)");
     else
         sprintf(formatStr, "Format: %c", instruction->format);
     ui->labelLine->setText(QString(instruction->source_line));
@@ -87,6 +89,13 @@ void explaindialog::drawRanges(QPainter *painter, int *bits, int *xBitPos, int y
         drawRange(painter, bits, xBitPos, y, 12, 14, "funct3");
         drawRange(painter, bits, xBitPos, y, 15, 19, "rs1");
         drawRange(painter, bits, xBitPos, y, 20, 31, "imm[11:0]");
+    }
+    if (instruction -> format == 'X') {
+        drawRange(painter, bits, xBitPos, y, 0, 6, "opcode");
+        drawRange(painter, bits, xBitPos, y, 7, 11, "rd");
+        drawRange(painter, bits, xBitPos, y, 12, 14, "funct3");
+        drawRange(painter, bits, xBitPos, y, 15, 19, "rs1");
+        drawRange(painter, bits, xBitPos, y, 20, 31, "imm[11:0] (special I format, see manual)");
     }
     if (instruction -> format == 'S') {
         drawRange(painter, bits, xBitPos, y, 0, 6, "opcode");
