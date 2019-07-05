@@ -520,6 +520,12 @@ int build_instruction_i (assembly_instruction *instruction, char *line, int inde
 	if (get_comma (line, &index, instruction)) return 1;
 	if (get_immediate (line, &index, instruction, &(instruction -> imm31), "unrecognized immediate")) return 1;
 
+    if (instruction -> imm31 > 2047 || instruction -> imm31 < -2048) {
+        instruction -> error_message = "immediate value out of range";
+        instruction -> error = 1;
+        return 1;
+    }
+
 	instruction -> instruction =
 	instruction -> imm31 << 20 |
 	instruction -> rs1 << 15 |

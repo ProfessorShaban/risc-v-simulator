@@ -32,8 +32,8 @@ typedef struct {
 	unsigned int funct7;
 	unsigned int funct3;
 	unsigned int rs1, rs2, rd;
-	unsigned int imm31;
-	unsigned int imm11;
+    int imm31;
+    int imm11;
 } assembly_instruction;
 
 #ifdef FROM_CPP

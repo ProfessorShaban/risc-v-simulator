@@ -49,7 +49,8 @@ void explaindialog::drawStringAt(QPainter *painter, const char *str, int x, int 
     painter->drawText(x, y, qStr);
 }
 
-void explaindialog::drawRange(QPainter *painter, int bits[], int xBitPos[], int y, int firstBit, int lastBit, const char *name)
+void explaindialog::drawRange(QPainter *painter, int bits[], int xBitPos[], int y, int firstBit, int lastBit, const char *name,
+                              bool signedNumber)
 {
     int x1 = xBitPos[firstBit] + 12;
     int y1 = y - 15;
@@ -63,12 +64,15 @@ void explaindialog::drawRange(QPainter *painter, int bits[], int xBitPos[], int 
     int x = (xBitPos[lastBit] + xBitPos[firstBit]) / 2;
     drawStringAt(painter, name, x, y + 45, 1 /* center */);
 
+    char str[20];
     int num = 0;
     for (int i = lastBit; i >= firstBit; i--)
-        num = num * 2 + bits[i];
-    char str[20];
+        num += bits[i] << (i - firstBit);
     sprintf (str, "0x%02x", num);
     drawStringAt(painter, str, x, y + 63, 1 /* center */);
+    if (signedNumber && bits[lastBit])
+        for (int i = lastBit - firstBit + 1; i < (int) (sizeof(int) * 8); i++)
+            num += 1 << i;
     sprintf (str, "%d", num);
     drawStringAt(painter, str, x, y + 81, 1 /* center */);
 }
@@ -88,7 +92,7 @@ void explaindialog::drawRanges(QPainter *painter, int *bits, int *xBitPos, int y
         drawRange(painter, bits, xBitPos, y, 7, 11, "rd");
         drawRange(painter, bits, xBitPos, y, 12, 14, "funct3");
         drawRange(painter, bits, xBitPos, y, 15, 19, "rs1");
-        drawRange(painter, bits, xBitPos, y, 20, 31, "imm[11:0]");
+        drawRange(painter, bits, xBitPos, y, 20, 31, "imm[11:0]", true /* signedNumber */);
     }
     if (instruction -> format == 'X') {
         drawRange(painter, bits, xBitPos, y, 0, 6, "opcode");

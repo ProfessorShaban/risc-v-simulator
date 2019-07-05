@@ -27,7 +27,7 @@ public:
 private:
     void drawStringAt(QPainter *painter, const char *str, int x, int y, int center = 0);
     void drawRanges(QPainter *painter, int *bits, int *xBitPos, int y);
-    void drawRange(QPainter *painter, int *bits, int *xBitPos, int y, int firstBit, int lastBit, const char *name);
+    void drawRange(QPainter *painter, int *bits, int *xBitPos, int y, int firstBit, int lastBit, const char *name, bool signedNumber = false);
 
     Ui::explaindialog *ui;
     assembly_instruction *instruction = 0;
