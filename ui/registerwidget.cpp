@@ -82,8 +82,8 @@ void RegisterWidget::paintEvent(QPaintEvent *)
         if (isGreen)
             p.fillRect(x - 2, y - 11, textWidth + 4, 16, green);
         p.drawText(x, y, *str);
-        registerXPos[i] = x;
-        registerYPos[i] = y;
+        registerXPos[i] = x - 2;
+        registerYPos[i] = y - 11;
     }
 
     double *fregisters = get_fregisters(sim);
@@ -124,8 +124,8 @@ void RegisterWidget::paintEvent(QPaintEvent *)
         if (isGreen)
             p.fillRect(x - 2, y - 11, textWidth + 4, 16, green);
         p.drawText(x, y, *str);
-        registerXPos[i+32] = x;
-        registerYPos[i+32] = y;
+        registerXPos[i+32] = x - 2;
+        registerYPos[i+32] = y - 11;
     }
 }
 
@@ -221,8 +221,14 @@ void RegisterWidget::changeRegister()
             registers[registerNum] = dialog -> GetRegisterValue();
     }
     else {
-//        double *fregisters = get_fregisters(sim);
-//        double registerValue = fregisters[registerNum];
-//???
+        registerNum -= 32;
+
+        double *fregisters = get_fregisters(sim);
+        double registerValue = fregisters[registerNum];
+
+        changeregisterdialog *dialog = new changeregisterdialog(this /* parent */);
+        dialog -> InitializeDouble(registerNum, registerValue);
+        if (dialog -> exec() == QDialog::Accepted)
+            fregisters[registerNum] = dialog -> GetRegisterValueDouble();
     }
 }

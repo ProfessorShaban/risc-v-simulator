@@ -1,16 +1,24 @@
+
 #ifndef REGISTERWIDGET_H
 #define REGISTERWIDGET_H
+
+#define FROM_CPP
+#include "../engine/sim.h"
 
 #include <QWidget>
 #include <QMouseEvent>
 #include <QObject>
 
-#define FROM_CPP
-#include "../engine/sim.h"
+
+QT_BEGIN_NAMESPACE
+class QWidget;
+QT_END_NAMESPACE
 
 
 class RegisterWidget : public QWidget
 {
+    Q_OBJECT
+
 public:
     RegisterWidget();
     void Initialize(simulator sim, void *mainWindow);
