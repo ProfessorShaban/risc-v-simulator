@@ -98,6 +98,3 @@ CONFIG     += debug
 CONFIG += static
 # QMAKE_LFLAGS += -static-libgcc -static-libstdc++
 QMAKE_LFLAGS += -static-libstdc++
-
-# marwan 12-31-18 - had to add this, for it to find the latest sdk
-QMAKE_MAC_SDK = macosx10.14
