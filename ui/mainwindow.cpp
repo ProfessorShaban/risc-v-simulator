@@ -225,9 +225,10 @@ bool MainWindow::saveAs()
     QFileDialog dialog(this);
     dialog.setWindowModality(Qt::WindowModal);
     dialog.setAcceptMode(QFileDialog::AcceptSave);
-    if (dialog.exec() != QDialog::Accepted)
+    const QString &fileName = dialog.getSaveFileName(this, "Save As");
+    if (fileName.length() == 0)
         return false;
-    return saveFile(dialog.selectedFiles().first());
+    return saveFile(fileName);
 }
 
 void MainWindow::about()
