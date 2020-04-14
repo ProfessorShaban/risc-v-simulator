@@ -152,17 +152,19 @@ bool MainWindow::eventFilter(QObject *object, QEvent *event)
 void MainWindow::showRegistersDecimal()
 {
     registerWidget->hex = false;
-    registerWidget->update();
     ui->toolButtonRegDecimal->setChecked(true);
     ui->toolButtonRegHex->setChecked(false);
+    registerWidget->update();
+    registerWidget->repaint();
 }
 
 void MainWindow::showRegistersHex()
 {
     registerWidget->hex = true;
-    registerWidget->update();
     ui->toolButtonRegDecimal->setChecked(false);
     ui->toolButtonRegHex->setChecked(true);
+    registerWidget->update();
+    registerWidget->repaint();
 }
 
 MainWindow::~MainWindow()
