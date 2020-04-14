@@ -49,6 +49,8 @@ extern "C" double* get_fregisters (simulator sim);
 extern "C" void set_pc (simulator sim, unsigned long long address);
 extern "C" unsigned long long get_pc (simulator sim);
 extern "C" void do_step(simulator sim, char **error_message, delta *deltas, int num_deltas, int *deltas_used);
+extern "C" int is_stopped(simulator sim);
+extern "C" void reset_stop(simulator sim);
 
 extern "C" void add_breakpoint (simulator sim, int address);
 extern "C" void delete_breakpoint (simulator sim, int address);
@@ -71,6 +73,8 @@ double* get_fregisters (simulator sim);
 void set_pc (simulator sim, unsigned long long address);
 unsigned long long get_pc (simulator sim);
 void do_step(simulator sim, char **error_message, delta *deltas, int num_deltas, int *deltas_used);
+int is_stopped(simulator sim);
+void reset_stop(simulator sim);
 
 void add_breakpoint (simulator sim, int address);
 void delete_breakpoint (simulator sim, int address);

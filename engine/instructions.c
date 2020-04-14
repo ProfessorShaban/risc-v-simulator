@@ -607,4 +607,8 @@ void execute_meta (simulator_internal *simi, assembly_instruction *instruction, 
 		sscanf (str, "%d", &num);
         * ((int *) &simi -> memory[simi -> reg[instruction -> rd]]) = num;
 	}
+    if (operation == INSTRUCTION_STOP) {
+        simi -> outputStringCallback ("Stopped.");
+        simi -> stop = 1;
+    }
 }

@@ -66,3 +66,4 @@ fsw f12, x24, 0
 fsqrt.s f12, f10      // fsqrt.s
 fsw f12, x24, 0
 
+stop

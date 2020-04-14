@@ -18,3 +18,4 @@ addi x20, x20, 1  // x20 = x20 + 1
 target:
 addi x20, x20, 1  // x20 = x20 + 1
 
+stop

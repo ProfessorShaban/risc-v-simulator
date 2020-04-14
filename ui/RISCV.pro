@@ -68,6 +68,19 @@ RESOURCES += \
     application.qrc
 
 DISTFILES += \
+    ../engine/tests/arithmetic_and_logical.asm \
+    ../engine/tests/branch.asm \
+    ../engine/tests/compare.asm \
+    ../engine/tests/data_input_output.asm \
+    ../engine/tests/demo.asm \
+    ../engine/tests/float.asm \
+    ../engine/tests/float_compare.asm \
+    ../engine/tests/jal 2.asm \
+    ../engine/tests/jal.asm \
+    ../engine/tests/load_and_store.asm \
+    ../engine/tests/mul_div.asm \
+    ../engine/tests/pseudoinstructions.asm \
+    ../engine/tests/shift.asm \
     engine/status.txt \
     engine/tests/arithmetic_and_logical.asm \
     engine/tests/branch.asm \

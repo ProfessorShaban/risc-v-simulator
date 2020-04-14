@@ -28,3 +28,4 @@ flt.s x11, f11, f12  // flt.s
 fle.s x11, f10, f11  // fle.s
 fle.s x11, f11, f12  // fle.s
 
+stop

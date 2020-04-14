@@ -74,3 +74,5 @@ srl x20, x20, x21
 addi x20, x0, -19  // srl
 addi x21, x0, 4
 srl x20, x20, x21
+
+stop

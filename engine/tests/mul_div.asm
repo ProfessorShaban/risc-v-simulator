@@ -44,3 +44,4 @@ addi x10, x0, -125   // remuw
 addi x11, x0, 14
 remuw x12, x10, x11
 
+stop

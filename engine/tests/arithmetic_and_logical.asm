@@ -65,3 +65,4 @@ lui x20, 600   // LUI
 // AUIPC
 auipc x20, 10  // AUIPC
 
+stop

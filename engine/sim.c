@@ -236,6 +236,7 @@ void initialize_formats()
     initialize_format (&i, &instruction_formats[i], "outint", INSTRUCTION_OUTINT, 'M', 0x5a, 0, 1, 2, 1);
     initialize_format (&i, &instruction_formats[i], "instr", INSTRUCTION_INSTR, 'M', 0x5a, 0, 1, 3, 1);
     initialize_format (&i, &instruction_formats[i], "inint", INSTRUCTION_ININT, 'M', 0x5a, 0, 1, 4, 1);
+    initialize_format (&i, &instruction_formats[i], "stop", INSTRUCTION_STOP, 'M', 0x5a, 0, 1, 5, 1);
 
     instruction_count = i;
 
@@ -270,6 +271,8 @@ simulator create_simulator(OutputString *outputStringCallback, InputString input
     sim -> labels = 0;
 
 	sim -> num_breakpoints = 0;
+
+    sim -> stop = 0;
 
 	return (simulator) sim;
 }
@@ -549,7 +552,9 @@ int get_immediate_or_offset (char *line, int *index, assembly_instruction *instr
 // 0 = success, 1 = error
 int build_instruction_m (assembly_instruction *instruction, char *line, int index)
 {
-	if (instruction -> funct7 != 1)	// everything except outln requires one register
+    // all except outln and stop require one register
+    if (instruction -> funct7 != 1 &&
+        instruction -> funct7 != 5)
     	if (get_register (line, &index, instruction, &(instruction -> rd), "unrecognized rd")) return 1;
 
     instruction -> instruction =
@@ -1352,6 +1357,18 @@ assembly_instruction** get_assembly (simulator sim, unsigned long long address, 
 }
 */
 
+int is_stopped(simulator sim)
+{
+    simulator_internal *simi = (simulator_internal *) sim;
+    return simi -> stop;
+}
+
+void reset_stop(simulator sim)
+{
+    simulator_internal *simi = (simulator_internal *) sim;
+    simi -> stop = 0;
+}
+
 void do_step(simulator sim, char **error_message, delta *deltas, int num_deltas, int *deltas_used)
 {
 	simulator_internal *simi = (simulator_internal *) sim;
@@ -1493,7 +1510,8 @@ void do_step(simulator sim, char **error_message, delta *deltas, int num_deltas,
 			 instruction -> instruction == INSTRUCTION_OUTLN ||
 			 instruction -> instruction == INSTRUCTION_OUTINT ||
 			 instruction -> instruction == INSTRUCTION_INSTR ||
-			 instruction -> instruction == INSTRUCTION_ININT)
+             instruction -> instruction == INSTRUCTION_ININT ||
+             instruction -> instruction == INSTRUCTION_STOP)
         execute_meta(simi, instruction, instruction -> instruction);
 
 	else {
@@ -1545,7 +1563,7 @@ void clear_breakpoints (simulator sim)
 void do_run(simulator sim, char **error_message, delta *deltas, int num_deltas, int *deltas_used)
 {
 	simulator_internal *simi = (simulator_internal *) sim;
-	while (1) {
+    while (simi -> stop == 0) {
 		do_step(sim, error_message, deltas, num_deltas, deltas_used);
 
 		// check for breakpoint

@@ -267,6 +267,12 @@ void MainWindow::doBuild()
 
 void MainWindow::doRun()
 {
+    reset_stop(sim);
+    startRun();
+}
+
+void MainWindow::startRun()
+{
     char *error_message = 0;
     deltas_used = 0;
     do_run(sim, &error_message, deltas, num_deltas, &deltas_used);
@@ -285,6 +291,10 @@ void MainWindow::doStep()
         consoleTextEdit -> appendPlainText(QString(error_message));
     updateDisplay();
     ensurePCVisible ();
+
+    // if 'stop' executed, kill the timer
+    if (is_stopped(sim))
+        animating = false;
 }
 
 void MainWindow::ensurePCVisible()
@@ -432,6 +442,7 @@ void MainWindow::createActions()
 
 void MainWindow::doAnimate()
 {
+    reset_stop(sim);
     if (animating) {
         animating = false;
     }
@@ -443,10 +454,12 @@ void MainWindow::doAnimate()
 
 void MainWindow::timerEvent(QTimerEvent *)
 {
-    if (animating)
-        doStep();
-    else
+    if (!animating) {
         killTimer(timerId);
+        return;
+    }
+
+    doStep();
 }
 
 void MainWindow::createStatusBar()

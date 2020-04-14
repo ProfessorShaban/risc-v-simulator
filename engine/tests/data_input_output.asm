@@ -50,3 +50,4 @@ beq x11, x0, done
 j loop
 done:
 
+stop

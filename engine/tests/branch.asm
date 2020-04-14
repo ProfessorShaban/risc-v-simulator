@@ -35,3 +35,5 @@ beq x0, x0, 4
 addi x12, x0, 2
 
 add x13, x12, x0
+
+stop

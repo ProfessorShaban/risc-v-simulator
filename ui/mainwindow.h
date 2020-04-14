@@ -30,6 +30,7 @@ public:
     void loadFile(const QString &fileName);
     void doBuild();
     void doRun();
+    void startRun();
     void doStep();
     void doAnimate();
     bool eventFilter(QObject *object, QEvent *event) override;

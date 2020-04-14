@@ -23,3 +23,4 @@ addi x10, x0, 10   // SLTIU
 sltiu x20, x10, 11
 sltiu x20, x10, 9
 
+stop

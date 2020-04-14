@@ -18,6 +18,7 @@ typedef struct {
 	InputString *inputStringCallback;
 	int breakpoints[100];
 	int num_breakpoints;
+    int stop;  // becomes true when 'stop' instruction is executed
 } simulator_internal;
 
 
@@ -182,4 +183,5 @@ typedef struct {
 #define INSTRUCTION_OUTINT    223
 #define INSTRUCTION_INSTR     224
 #define INSTRUCTION_ININT     225
+#define INSTRUCTION_STOP      226
 
