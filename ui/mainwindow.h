@@ -35,6 +35,9 @@ public:
     void doAnimate();
     bool eventFilter(QObject *object, QEvent *event) override;
     void doOptions();
+    void doDecreaseFontSize();
+    void doIncreaseFontSize();
+    void setFont();
     void writeLine(QString str);
     void readLine(char *line);
     void doUpdateDisplay();
@@ -50,6 +53,7 @@ private:
     QAction *animateAct;
     bool animating = false;
     int animateMilliseconds = 200;
+    int fontSize = 12;
 
 protected:
     void closeEvent(QCloseEvent *event) override;

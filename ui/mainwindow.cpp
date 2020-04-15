@@ -119,6 +119,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     setUnifiedTitleAndToolBarOnMac(true);
 
+    setFont();
+
     resetSimulator();
 }
 
@@ -312,6 +314,28 @@ void MainWindow::doOptions()
     updateDisplay();
 }
 
+void MainWindow::doDecreaseFontSize()
+{
+    fontSize --;
+    if (fontSize < 8)
+        fontSize = 8;
+    setFont();
+}
+
+void MainWindow::doIncreaseFontSize()
+{
+    fontSize ++;
+    if (fontSize > 48)
+        fontSize = 48;
+    setFont();
+}
+
+void MainWindow::setFont()
+{
+    QFont newFont("Courier", fontSize);
+    ui->codeEditor->setFont(newFont);
+}
+
 void MainWindow::createActions()
 {
     QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
@@ -402,6 +426,16 @@ void MainWindow::createActions()
     viewMenu->addAction(ui->dockWidgetRegisters->toggleViewAction());
     viewMenu->addAction(ui->dockWidgetMemory->toggleViewAction());
     viewMenu->addAction(ui->dockWidgetConsole->toggleViewAction());
+    viewMenu->addSeparator();
+
+    QAction *decreaseFontSizeAction = new QAction(tr("Decrease Font Size"), this);
+    connect(decreaseFontSizeAction, &QAction::triggered, this, &MainWindow::doDecreaseFontSize);
+    viewMenu->addAction(decreaseFontSizeAction);
+
+    QAction *increaseFontSizeAction = new QAction(tr("Increase Font Size"), this);
+    connect(increaseFontSizeAction, &QAction::triggered, this, &MainWindow::doIncreaseFontSize);
+    viewMenu->addAction(increaseFontSizeAction);
+
     viewMenu->addSeparator();
     QAction *optionsAct = new QAction(tr("&Options"), this);
     connect(optionsAct, &QAction::triggered, this, &MainWindow::doOptions);
