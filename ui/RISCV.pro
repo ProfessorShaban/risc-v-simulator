@@ -25,6 +25,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     codeeditor.cpp \
+    disassemblerwidget.cpp \
     main.cpp \
     mainwindow.cpp \
     registerwidget.cpp \
@@ -40,6 +41,7 @@ SOURCES += \
     changeregisterdialog.cpp
 
 HEADERS += \
+    disassemblerwidget.h \
         mainwindow.h \
     codeeditor.h \
     registerwidget.h \

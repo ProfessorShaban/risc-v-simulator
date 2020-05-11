@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include "registerwidget.h"
 #include "memorywidget.h"
+#include "disassemblerwidget.h"
 
 #define FROM_CPP
 #include "../engine/sim.h"
@@ -48,8 +49,10 @@ private:
     QPlainTextEdit *consoleTextEdit;
     RegisterWidget *registerWidget;
     MemoryWidget *memoryWidget;
+    DisassemblerWidget *disassemblerWidget;
     QWidget* registerContainerWidget;
     QWidget* memoryContainerWidget;
+    QWidget* disassemblerContainerWidget;
     QAction *animateAct;
     bool animating = false;
     int animateMilliseconds = 200;

@@ -117,6 +117,32 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->toolButtonRegDecimal, &QToolButton::clicked, this, &MainWindow::showRegistersDecimal);
     connect(ui->toolButtonRegHex, &QToolButton::clicked, this, &MainWindow::showRegistersHex);
 
+    // set up disassembler widget
+    containerWidget = new QWidget();
+    containerWidget->setLayout(new QVBoxLayout);
+
+    disassemblerWidget = new DisassemblerWidget();
+    disassemblerWidget->setLayout(new QVBoxLayout);
+    disassemblerWidget->layout()->setAlignment(Qt::AlignTop);
+
+    QScrollArea *disassemblerScrollArea = new QScrollArea();
+    disassemblerScrollArea->setWidget(disassemblerWidget);
+    disassemblerScrollArea->setFrameShape(QFrame::NoFrame);
+
+    containerWidget->layout()->addWidget(disassemblerScrollArea);
+
+    // set up disassembler layout
+    disassemblerContainerWidget = new QWidget();
+    gridLayout = new QGridLayout();
+    gridLayout->addWidget(containerWidget, 2, 1, 1, 2);
+    //    gridLayout->setColumnStretch(1, 0);
+    disassemblerContainerWidget->setLayout(gridLayout);
+    ui->dockWidgetDisassembler->setWidget(disassemblerContainerWidget);
+    gridLayout->setContentsMargins(0, 0, 0, 0);
+
+    //disassemblerContainerWidget->setStyleSheet("border: 1px solid red");
+    disassemblerContainerWidget->installEventFilter(this);
+
     setUnifiedTitleAndToolBarOnMac(true);
 
     setFont();
@@ -139,6 +165,7 @@ void MainWindow::resetSimulator()
     ui->codeEditor->initialize(this);
     registerWidget->Initialize(sim, this);
     memoryWidget->Initialize(sim, this);
+    disassemblerWidget->Initialize(sim, this);
     doBuild();
 }
 
@@ -148,6 +175,8 @@ bool MainWindow::eventFilter(QObject *object, QEvent *event)
         registerWidget->containerSizeChanged(registerContainerWidget->width());
     if (object == memoryContainerWidget && event->type() == QEvent::Resize)
         memoryWidget->containerSizeChanged(memoryContainerWidget->width());
+    if (object == disassemblerContainerWidget && event->type() == QEvent::Resize)
+        disassemblerWidget->containerSizeChanged(disassemblerContainerWidget->width());
     return false;
 }
 
@@ -238,7 +267,8 @@ void MainWindow::about()
    QMessageBox::about(this, tr("About RISC-V Simulator"),
             tr("RISC-V Simulator v 1.1<br/>&nbsp;<br/>"
                "The <b>RISC-V Simulator</b> assembles RISC-V assembly language programs and "
-               "runs the programs on a simulated RISC-V processor.<br/>&nbsp;<br/>Copyright (c) 2018 Seminole State College. All rights reserved"));
+               "runs the programs on a simulated RISC-V processor.<br/>&nbsp;<br/>Copyright (c) 2018-20 "
+               "Seminole State College. All rights reserved"));
 }
 
 void MainWindow::documentWasModified()
@@ -251,6 +281,7 @@ void MainWindow::updateDisplay()
     ui->codeEditor->updateInstructions();
     registerWidget->update();
     memoryWidget->update();
+    disassemblerWidget->update();
 }
 
 void MainWindow::doBuild()
@@ -426,6 +457,7 @@ void MainWindow::createActions()
     viewMenu->addAction(ui->dockWidgetRegisters->toggleViewAction());
     viewMenu->addAction(ui->dockWidgetMemory->toggleViewAction());
     viewMenu->addAction(ui->dockWidgetConsole->toggleViewAction());
+    viewMenu->addAction(ui->dockWidgetDisassembler->toggleViewAction());
     viewMenu->addSeparator();
 
     QAction *decreaseFontSizeAction = new QAction(tr("Decrease Font Size"), this);

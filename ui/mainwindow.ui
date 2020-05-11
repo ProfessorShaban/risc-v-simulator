@@ -43,6 +43,35 @@
       </property>
      </widget>
     </item>
+    <item>
+     <widget class="QDockWidget" name="dockWidgetDisassembler">
+      <property name="minimumSize">
+       <size>
+        <width>200</width>
+        <height>100</height>
+       </size>
+      </property>
+      <property name="baseSize">
+       <size>
+        <width>200</width>
+        <height>150</height>
+       </size>
+      </property>
+      <property name="floating">
+       <bool>false</bool>
+      </property>
+      <property name="features">
+       <set>QDockWidget::AllDockWidgetFeatures</set>
+      </property>
+      <property name="allowedAreas">
+       <set>Qt::AllDockWidgetAreas</set>
+      </property>
+      <property name="windowTitle">
+       <string>Disassembler</string>
+      </property>
+      <widget class="QWidget" name="dockWidgetContents_4"/>
+     </widget>
+    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menuBar">
