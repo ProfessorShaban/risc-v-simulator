@@ -5,8 +5,8 @@ RISC-V assembler/simulator with GUI
 
 Building on Mac, Windows or Linux:
 
-• Download Qt
-• Use Qt Creator
+- Download Qt
+- Use Qt Creator
 
 
 ===
@@ -14,15 +14,15 @@ Building on Mac, Windows or Linux:
 To build from command line on Linux (Debian):
 
 Install Qt:
-• sudo apt-get install build-essential libgl1-mesa-dev
-• sudo apt-get install qtcreator
-• sudo apt-get install qt5-default
+- sudo apt-get install build-essential libgl1-mesa-dev
+- sudo apt-get install qtcreator
+- sudo apt-get install qt5-default
 
 Build RISC-V simulator:
-• Get source and unzip
-• cd ui
-• qmake RISCV.pro
-• make
+- Get source and unzip
+- cd ui
+- qmake RISCV.pro
+- make
 
 Then to run: ./RISCV
 
