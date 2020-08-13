@@ -17,25 +17,30 @@ public:
     DisassemblerWidget();
     void Initialize(simulator sim, void *mainWindow);
     void containerSizeChanged(int width);
+    void refreshDisassembly();
 
     void paintEvent(QPaintEvent *) override;
 
     simulator sim;
     void *mainWindow = 0;
-    int address = 2000;
+    int address = 1000;
 
 private:
     bool getIsGreen(unsigned long long address);
+    void DeallocateMemory();
 
-    int textWidth = 0;
+    int charWidth = 20;
+    int textWidth = 1024;
     int prefixTextWidth = 0;
     int singleByteTextWidth = 0;
     int twoHexDigitsTextWidth = 0;
     QPoint clickPos;
     int wordXPos[260];
     int wordYPos[260];
-    int wordWidth = 0;
     int wordHeight = 0;
+
+    char **lines = 0;
+    int numLines = 0;
 };
 
 #endif // DISASSEMBLERWIDGET_H

@@ -295,6 +295,7 @@ void MainWindow::doBuild()
     QByteArray byteArray = programStr.toLocal8Bit();
     char *str = byteArray.data();
     instructions = assemble(sim, str, 1000, &num_of_instructions);
+    disassemblerWidget -> refreshDisassembly();
     updateDisplay();
 }
 
