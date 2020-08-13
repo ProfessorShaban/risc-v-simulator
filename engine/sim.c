@@ -1590,150 +1590,49 @@ void get_instruction_string(simulator sim, int address, char* instruction_string
         return;
     }
 
-    copy_string (instruction_string, "Instruction...");
-
-/*
-    // load
-    if (instruction -> instruction == INSTRUCTION_LB ||
-        instruction -> instruction == INSTRUCTION_LH ||
-        instruction -> instruction == INSTRUCTION_LW ||
-        instruction -> instruction == INSTRUCTION_LD ||
-        instruction -> instruction == INSTRUCTION_LBU ||
-        instruction -> instruction == INSTRUCTION_LHU ||
-        instruction -> instruction == INSTRUCTION_LWU
-        //instruction -> instruction == INSTRUCTION_LDU
-        )
-        execute_load(simi, instruction, deltas, num_deltas, deltas_used, instruction -> instruction);
-
-    // store
-    else if (instruction -> instruction == INSTRUCTION_SB ||
-             instruction -> instruction == INSTRUCTION_SH ||
-             instruction -> instruction == INSTRUCTION_SW ||
-             instruction -> instruction == INSTRUCTION_SD)
-        execute_store(simi, instruction, deltas, num_deltas, deltas_used, instruction -> instruction);
-
-    // shift
-    else if (instruction -> instruction == INSTRUCTION_SLL ||
-             instruction -> instruction == INSTRUCTION_SLLW ||
-             //instruction -> instruction == INSTRUCTION_SLLD ||
-             instruction -> instruction == INSTRUCTION_SLLI ||
-             instruction -> instruction == INSTRUCTION_SLLIW ||
-             //instruction -> instruction == INSTRUCTION_SLLID ||
-             instruction -> instruction == INSTRUCTION_SRL ||
-             instruction -> instruction == INSTRUCTION_SRLW ||
-             //instruction -> instruction == INSTRUCTION_SRLD ||
-             instruction -> instruction == INSTRUCTION_SRLI ||
-             instruction -> instruction == INSTRUCTION_SRLIW ||
-             //instruction -> instruction == INSTRUCTION_SRLID ||
-             instruction -> instruction == INSTRUCTION_SRA ||
-             instruction -> instruction == INSTRUCTION_SRAW ||
-             //instruction -> instruction == INSTRUCTION_SRAD ||
-             instruction -> instruction == INSTRUCTION_SRAI ||
-             instruction -> instruction == INSTRUCTION_SRAIW
-             //instruction -> instruction == INSTRUCTION_SRAID
-             )
-        execute_shift(simi, instruction, deltas, num_deltas, deltas_used, instruction -> instruction);
-
-    // arithmetic
-    else if (instruction -> instruction == INSTRUCTION_ADD ||
-             instruction -> instruction == INSTRUCTION_ADDW ||
-             //instruction -> instruction == INSTRUCTION_ADDD ||
-             instruction -> instruction == INSTRUCTION_SUB ||
-             instruction -> instruction == INSTRUCTION_SUBW
-             //instruction -> instruction == INSTRUCTION_SUBD
-             )
-        execute_arithmetic(simi, instruction, deltas, num_deltas, deltas_used, instruction -> instruction);
-    else if (instruction -> instruction == INSTRUCTION_ADDI ||
-             instruction -> instruction == INSTRUCTION_ADDIW
-             //instruction -> instruction == INSTRUCTION_ADDID
-             )
-        execute_arithmetic_immediate(simi, instruction, deltas, num_deltas, deltas_used, instruction -> instruction);
-    else if (instruction -> instruction == INSTRUCTION_AUIPC ||
-             instruction -> instruction == INSTRUCTION_LUI)
-        execute_arithmetic_u(simi, instruction, deltas, num_deltas, deltas_used, instruction -> instruction);
-
-    // logical
-    else if (instruction -> instruction == INSTRUCTION_XOR ||
-             instruction -> instruction == INSTRUCTION_OR ||
-             instruction -> instruction == INSTRUCTION_AND)
-        execute_arithmetic(simi, instruction, deltas, num_deltas, deltas_used, instruction -> instruction);
-    else if (instruction -> instruction == INSTRUCTION_XORI ||
-             instruction -> instruction == INSTRUCTION_ORI ||
-             instruction -> instruction == INSTRUCTION_ANDI)
-        execute_arithmetic_immediate(simi, instruction, deltas, num_deltas, deltas_used, instruction -> instruction);
-
-    // compare
-    else if (instruction -> instruction == INSTRUCTION_SLT ||
-             instruction -> instruction == INSTRUCTION_SLTI ||
-             instruction -> instruction == INSTRUCTION_SLTU ||
-             instruction -> instruction == INSTRUCTION_SLTIU)
-        execute_compare(simi, instruction, deltas, num_deltas, deltas_used, instruction -> instruction);
-
-    // branch
-    else if (instruction -> instruction == INSTRUCTION_BEQ ||
-             instruction -> instruction == INSTRUCTION_BNE ||
-             instruction -> instruction == INSTRUCTION_BLT ||
-             instruction -> instruction == INSTRUCTION_BGE ||
-             instruction -> instruction == INSTRUCTION_BLTU ||
-             instruction -> instruction == INSTRUCTION_BGEU)
-        execute_branch(simi, instruction, instruction -> instruction);
-
-    // jump and link
-    else if (instruction -> instruction == INSTRUCTION_JAL ||
-             instruction -> instruction == INSTRUCTION_JALR)
-        execute_jump_and_link(simi, instruction, deltas, num_deltas, deltas_used, instruction -> instruction);
-
-    // multiply/divide
-    else if (instruction -> instruction == INSTRUCTION_MUL ||
-             instruction -> instruction == INSTRUCTION_MULW ||
-             //instruction -> instruction == INSTRUCTION_MULD ||
-             instruction -> instruction == INSTRUCTION_MULH ||
-             instruction -> instruction == INSTRUCTION_MULHSU ||
-             instruction -> instruction == INSTRUCTION_MULHU ||
-             instruction -> instruction == INSTRUCTION_DIV ||
-             instruction -> instruction == INSTRUCTION_DIVW ||
-             //instruction -> instruction == INSTRUCTION_DIVD ||
-             instruction -> instruction == INSTRUCTION_DIVU ||
-             instruction -> instruction == INSTRUCTION_REM ||
-             instruction -> instruction == INSTRUCTION_REMW ||
-             //instruction -> instruction == INSTRUCTION_REMD ||
-             instruction -> instruction == INSTRUCTION_REMU ||
-             instruction -> instruction == INSTRUCTION_REMUW
-             //instruction -> instruction == INSTRUCTION_REMUD
-             )
-        execute_mul(simi, instruction, deltas, num_deltas, deltas_used, instruction -> instruction);
-
-    // floating point load
-    else if (instruction -> instruction == INSTRUCTION_FLW ||
-             instruction -> instruction == INSTRUCTION_FLD)
-        execute_floating_load(simi, instruction, deltas, num_deltas, deltas_used, instruction -> instruction);
-
-    // floating point store
-    else if (instruction -> instruction == INSTRUCTION_FSW ||
-             instruction -> instruction == INSTRUCTION_FSD)
-        execute_floating_store(simi, instruction, deltas, num_deltas, deltas_used, instruction -> instruction);
-
-    // floating point
-    else if (instruction -> instruction >= INSTRUCTION_FMV_H_X &&
-             instruction -> instruction <= INSTRUCTION_FLE_D)
-        execute_floating(simi, instruction, deltas, num_deltas, deltas_used, instruction -> instruction);
-
-    // meta
-    else if (instruction -> instruction == INSTRUCTION_OUTSTR ||
-             instruction -> instruction == INSTRUCTION_OUTLN ||
-             instruction -> instruction == INSTRUCTION_OUTINT ||
-             instruction -> instruction == INSTRUCTION_INSTR ||
-             instruction -> instruction == INSTRUCTION_ININT ||
-             instruction -> instruction == INSTRUCTION_STOP)
-        execute_meta(simi, instruction, instruction -> instruction);
-
-    else {
-        *error_message = "Unrecognized instruction";
-        free(instruction);
+    // get instruction format
+    instruction_format *format = find_instruction_format_by_opcode(instruction->opcode, instruction->funct3, instruction->funct7);
+    if (format == 0) {
+        copy_string (instruction_string, "(invalid instruction)");
         return;
     }
 
-*/
+    switch (instruction -> format) {
+    case 'R':
+        sprintf(instruction_string, "%s x%d, x%d, x%d", format -> mnemonic, instruction -> rd, instruction -> rs1, instruction -> rs2);
+        break;
+    case 'I':
+        sprintf(instruction_string, "%s x%d, x%d, %d", format -> mnemonic, instruction -> rd, instruction -> rs1, instruction -> imm31);
+        break;
+    case 'S':
+        {
+            unsigned long long imm = instruction -> imm31 << 5 | instruction -> imm11;
+            sprintf(instruction_string, "%s x%d, x%d, %lld", format -> mnemonic, instruction -> rs1, instruction -> rs2, imm);
+        }
+        break;
+    case 'B':
+        {
+            unsigned int bit11 = instruction -> imm11 & 0x1;
+            unsigned int bit12 = instruction -> imm31 >> 6;
+            unsigned int bits1to4 = instruction -> imm11 >> 1;
+            unsigned int bits5to10 = instruction -> imm31 & 0x3f;
+            unsigned int offset_unsigned = (bit12 << 11) | (bit11 << 10) | (bits5to10 << 4) | bits1to4;
+            int offset = (int) (signed long long) sign_extend (offset_unsigned, 12);
+            offset = offset << 1;
+            sprintf(instruction_string, "%s x%d, x%d, %d", format -> mnemonic, instruction -> rs1, instruction -> rs2, offset);
+        }
+        break;
+    case 'U':
+        sprintf(instruction_string, "%s x%d, %d", format -> mnemonic, instruction -> rd, instruction -> imm31);
+        break;
+    case 'J':
+//???        sprintf(instruction_string, "%s x%d, x%d, x%d", format -> mnemonic, instruction -> rd, instruction -> rs1, instruction -> rs2);
+        sprintf(instruction_string, "Unknown instruction");
+        break;
+    default:
+        copy_string (instruction_string, "(unknown instruction)");
+        break;
+    }
 
     free(instruction);
 }
