@@ -424,7 +424,7 @@ double get_double(char *token, int *success)
 instruction_format* get_instruction_format (char* mnemonic)
 {
     // binary search for the mnemonic in the index
-    int high = instruction_count;
+    int high = instruction_count - 1;
     int low = 0;
     while (low <= high) {
         int mid = (low + high - 1) / 2;
@@ -1186,7 +1186,7 @@ assembly_instruction** assemble (simulator sim, const char *program, int address
 
 instruction_format* find_instruction_format_by_opcode(int opcode, int funct3, int funct7) {
 
-    int high = instruction_count;
+    int high = instruction_count - 1;
     int low = 0;
     while (low <= high) {
         int mid = (low + high - 1) / 2;
@@ -1200,8 +1200,7 @@ instruction_format* find_instruction_format_by_opcode(int opcode, int funct3, in
             compare = 1;
         else if (opcode < instruction_opcode_index[mid].opcode)
             compare = -1;
-        else {
-            if (instruction_opcode_index[mid].check_funct3) {
+        else if (instruction_opcode_index[mid].check_funct3) {
                 if (funct3 > instruction_opcode_index[mid].funct3)
                     compare = 1;
                 else if (funct3 < instruction_opcode_index[mid].funct3)
@@ -1215,6 +1214,11 @@ instruction_format* find_instruction_format_by_opcode(int opcode, int funct3, in
                     }
                 }
             }
+        else if (instruction_opcode_index[mid].check_funct7) {
+            if (funct7 > instruction_opcode_index[mid].funct7)
+                compare = 1;
+            else if (funct7 < instruction_opcode_index[mid].funct7)
+                compare = -1;
         }
 
         if (compare == 0) {
@@ -1581,8 +1585,6 @@ void do_run(simulator sim, char **error_message, delta *deltas, int num_deltas, 
 
 void get_instruction_string(simulator sim, int address, char* instruction_string)
 {
-    simulator_internal *simi = (simulator_internal *) sim;
-
     assembly_instruction *instruction = get_instruction(sim, address);
 
     if (instruction == 0) {
@@ -1599,15 +1601,83 @@ void get_instruction_string(simulator sim, int address, char* instruction_string
 
     switch (instruction -> format) {
     case 'R':
-        sprintf(instruction_string, "%s x%d, x%d, x%d", format -> mnemonic, instruction -> rd, instruction -> rs1, instruction -> rs2);
+        {
+            int is_float = instruction -> mnemonic[0] == 'f' || instruction -> mnemonic[0] == 'F';
+            char register_prefix = is_float ? 'f' : 'x';
+
+            if (format -> mnemonic[0] == 'f' &&
+                format -> mnemonic[1] == 'c' &&
+                format -> mnemonic[2] == 'v' &&
+                format -> mnemonic[3] == 't' &&
+                format -> mnemonic[4] == '.') {
+                if (format -> mnemonic[5] == 's' ||
+                    format -> mnemonic[1] == 'd')
+                    sprintf(instruction_string, "%s f%d, x%d", format -> mnemonic,
+                            instruction -> rd, instruction -> rs1);
+                else
+                    sprintf(instruction_string, "%s x%d, f%d", format -> mnemonic,
+                            instruction -> rd, instruction -> rs1);
+            }
+            else if (instruction -> instruction == INSTRUCTION_FSQRT_D ||
+                     instruction -> instruction == INSTRUCTION_FSQRT_S) {
+                sprintf(instruction_string, "%s f%d, f%d", format -> mnemonic, instruction -> rd, instruction -> rs1);
+            }
+            else if (instruction -> instruction == INSTRUCTION_FLE_D ||
+                     instruction -> instruction == INSTRUCTION_FLT_D ||
+                     instruction -> instruction == INSTRUCTION_FEQ_D ||
+                     instruction -> instruction == INSTRUCTION_FLE_S ||
+                     instruction -> instruction == INSTRUCTION_FLT_S ||
+                     instruction -> instruction == INSTRUCTION_FEQ_S) {
+                sprintf(instruction_string, "%s x%d, f%d, f%d", format -> mnemonic,
+                        instruction -> rd, instruction -> rs1, instruction -> rs2);
+            }
+            else
+                sprintf(instruction_string, "%s %c%d, %c%d, %c%d", format -> mnemonic,
+                        register_prefix, instruction -> rd, register_prefix, instruction -> rs1, register_prefix, instruction -> rs2);
+        }
         break;
     case 'I':
-        sprintf(instruction_string, "%s x%d, x%d, %d", format -> mnemonic, instruction -> rd, instruction -> rs1, instruction -> imm31);
+        {
+            int is_float = instruction -> mnemonic[0] == 'f' || instruction -> mnemonic[0] == 'F';
+            char register_prefix = is_float ? 'f' : 'x';
+
+            // for load, deassemble in load/store format
+            if (instruction -> instruction == INSTRUCTION_FLW ||
+                instruction -> instruction == INSTRUCTION_FLD ||
+                instruction -> instruction == INSTRUCTION_LB ||
+                instruction -> instruction == INSTRUCTION_LW ||
+                instruction -> instruction == INSTRUCTION_LD ||
+                instruction -> instruction == INSTRUCTION_LH ||
+                instruction -> instruction == INSTRUCTION_LBU ||
+                instruction -> instruction == INSTRUCTION_LHU ||
+                instruction -> instruction == INSTRUCTION_LWU) {
+                if (is_float)
+                    sprintf(instruction_string, "%s f%d, %d(x%d)", format -> mnemonic,
+                            instruction -> rd, instruction -> imm31, instruction -> rs1);
+                else
+                    sprintf(instruction_string, "%s x%d, %d(x%d)", format -> mnemonic,
+                            instruction -> rd, instruction -> imm31, instruction -> rs1);
+            }
+            else
+                sprintf(instruction_string, "%s %c%d, %c%d, %d", format -> mnemonic,
+                        register_prefix, instruction -> rd, register_prefix, instruction -> rs1, instruction -> imm31);
+        }
+        break;
+    case 'X':
+        sprintf(instruction_string, "%s x%d, x%d, %d", format -> mnemonic, instruction -> rd, instruction -> rs1, instruction -> rs2);
         break;
     case 'S':
         {
             unsigned long long imm = instruction -> imm31 << 5 | instruction -> imm11;
-            sprintf(instruction_string, "%s x%d, x%d, %lld", format -> mnemonic, instruction -> rs1, instruction -> rs2, imm);
+            int is_float = instruction -> mnemonic[0] == 'f' || instruction -> mnemonic[0] == 'F';
+            char register_prefix = is_float ? 'f' : 'x';
+
+            if (is_float)
+                sprintf(instruction_string, "%s f%d, %lld(x%d)", format -> mnemonic,
+                        instruction -> rs1, imm, instruction -> rs2);
+            else
+                sprintf(instruction_string, "%s x%d, %lld(x%d)", format -> mnemonic,
+                        instruction -> rs1, imm, instruction -> rs2);
         }
         break;
     case 'B':
@@ -1626,8 +1696,15 @@ void get_instruction_string(simulator sim, int address, char* instruction_string
         sprintf(instruction_string, "%s x%d, %d", format -> mnemonic, instruction -> rd, instruction -> imm31);
         break;
     case 'J':
-//???        sprintf(instruction_string, "%s x%d, x%d, x%d", format -> mnemonic, instruction -> rd, instruction -> rs1, instruction -> rs2);
-        sprintf(instruction_string, "Unknown instruction");
+        {
+            unsigned int bit11 = (instruction -> imm31 & 0x100) >> 8;
+            unsigned int bit20 = instruction -> imm31 >> 19;
+            unsigned int bits1to10 = (instruction -> imm31 & 0x3fe00) >> 9;
+            unsigned int bits12to19 = instruction -> imm31 & 0xff;
+            unsigned int offset_unsigned = (bit20 << 19) | (bits12to19 << 11) | (bit11 << 10) | bits1to10;
+
+            sprintf(instruction_string, "%s x%d, %d", format -> mnemonic, instruction -> rd, offset_unsigned * 2);
+        }
         break;
     default:
         copy_string (instruction_string, "(unknown instruction)");

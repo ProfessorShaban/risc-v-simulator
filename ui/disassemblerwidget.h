@@ -21,7 +21,7 @@ public:
 
     void paintEvent(QPaintEvent *) override;
 
-    simulator sim;
+    simulator sim = 0;
     void *mainWindow = 0;
     int address = 1000;
 
