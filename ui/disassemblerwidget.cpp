@@ -57,7 +57,7 @@ void DisassemblerWidget::paintEvent(QPaintEvent *)
     }
 }
 
-bool DisassemblerWidget::getIsGreen(unsigned long long address)
+bool DisassemblerWidget::getIsGreen(unsigned long long)
 {
     // for now, nothing is green
     return false;
@@ -69,7 +69,7 @@ void DisassemblerWidget::Initialize(simulator sim, void *mainWindow)
     this->mainWindow = mainWindow;
 }
 
-void DisassemblerWidget::containerSizeChanged(int width)
+void DisassemblerWidget::containerSizeChanged(int)
 {
     update();
 }
@@ -79,32 +79,56 @@ void DisassemblerWidget::refreshDisassembly()
     if (sim == 0)
         return;
 
-    unsigned char *mem = get_memory(sim, address);
+    unsigned char *mem = get_memory(sim, 0);
     int increment = 4;
     int longestLine = 0;
-    int maxInstructions = 1000;
 
     // deallocate previous lines
     DeallocateMemory();
 
-    for (int i = 0; i < maxInstructions; i += increment) {
-        // disassemble until we see zeros
-        if (mem[i+0] == 0 && mem[i+1] == 0 && mem[i+2] == 0 && mem[i+3] == 0)
-            break;
-        numLines ++;
-    }
+    MainWindow *theMainWindow = (MainWindow*) mainWindow;
+    int address = 1000;
+    numLines = 0;
+    int arraySize = 10;
+    lines = (char **) malloc(sizeof(char *) * (arraySize + 1));
+    for (int i = 0; i < theMainWindow -> num_of_instructions; i++) {
+        assembly_instruction *instruction = theMainWindow -> instructions[i];
 
-    lines = (char **) malloc(sizeof(char *) * (numLines + 1));
-    for (int i = 0; i < numLines * increment; i += increment) {
-        int line = i / increment;
-        lines[line] = (char *) malloc(sizeof(char) * 150);
+        while (address < (int) instruction -> address) {
+            // print 4 bytes
+            lines[numLines] = (char *) malloc(sizeof(char) * 150);
+            sprintf (lines[numLines], "%05d: %02x %02x %02x %02x", address, mem[address + 0], mem[address + 1], mem[address + 2], mem[address + 3]);
+            address += increment;
+            numLines ++;
+            if (numLines + 1 >= arraySize) {
+                arraySize += 10;
+                lines = (char **) realloc (lines, sizeof (char *) * (arraySize + 1));
+            }
+        }
 
+        lines[numLines] = (char *) malloc(sizeof(char) * 150);
         char chInstruction [100];
-        get_instruction_string (sim, address + i, chInstruction);
-        sprintf (lines[line], "%05d: %02x %02x %02x %02x  %s", address + i, mem[i + 0], mem[i + 1], mem[i + 2], mem[i + 3], chInstruction);
 
-        if ((int) strlen(lines[line]) > longestLine)
-            longestLine = strlen(lines[line]);
+        if (instruction -> error != 0) {
+            // print 4 bytes
+            sprintf (lines[numLines], "%05d: %02x %02x %02x %02x", address, mem[address + 0], mem[address + 1], mem[address + 2], mem[address + 3]);
+        }
+        else {
+            // disassemble
+            get_instruction_string (sim, address, chInstruction);
+            sprintf (lines[numLines], "%05d: %02x %02x %02x %02x  %s", address, mem[address + 0], mem[address + 1], mem[address + 2], mem[address + 3], chInstruction);
+        }
+
+        if ((int) strlen(lines[numLines]) > longestLine)
+            longestLine = strlen(lines[numLines]);
+
+        address += increment;
+        numLines ++;
+
+        if (numLines + 1 >= arraySize) {
+            arraySize += 10;
+            lines = (char **) realloc (lines, sizeof (char *) * (arraySize + 1));
+        }
     }
 
     // set width properly
