@@ -40,3 +40,11 @@ void get_instruction_string2(simulator2 *sim, int address, char* instruction_str
 {
     return get_instruction_string(sim->sim, address, instruction_string);
 }
+
+// returns 0 for success, 1 otherwise
+int do_partial_assembly(simulator2 *sim, int lineNumber, const char* line)
+{
+//???
+
+    return 0;
+}

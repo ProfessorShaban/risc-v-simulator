@@ -37,6 +37,7 @@ extern "C" assembly_instruction** assemble2 (simulator2 *sim, const char *progra
 extern "C" assembly_instruction* get_instruction2 (simulator2 *sim, unsigned long long address);
 extern "C" unsigned char* get_memory2 (simulator2 *sim, unsigned long long address);
 extern "C" void get_instruction_string2(simulator2 *sim, int address, char *instruction_string);
+extern "C" int do_partial_assembly(simulator2 *sim, int lineNumber, const char* line);
 
 #endif
 
@@ -48,6 +49,7 @@ assembly_instruction** assemble2 (simulator2 *sim, const char *program, int addr
 assembly_instruction* get_instruction2 (simulator2 *sim, unsigned long long address);
 unsigned char* get_memory2 (simulator2 *sim, unsigned long long address);
 void get_instruction_string2(simulator2 *sim, int address, char *instruction_string);
+int do_partial_assembly(simulator2 *sim, int lineNumber, const char* line);
 
 #endif
 

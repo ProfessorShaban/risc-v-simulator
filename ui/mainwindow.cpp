@@ -380,18 +380,18 @@ void MainWindow::doBuildSim2()
 }
 
 // returns 0 for success, 1 otherwise
-int MainWindow::doPartialBuildSim2(int lineNumber) {
+int MainWindow::doPartialBuildSim2(int lineNumber, const char *line) {
 
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
-//??? do partial assembly
+    int result = do_partial_assembly (sim2, lineNumber, line);
 
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
     time_sim2 += std::chrono::duration_cast<std::chrono::nanoseconds> (end - begin).count();
 
     compareDisassemblies();
 
-    return 0;
+    return result;
 }
 
 void MainWindow::compareDisassemblies() {

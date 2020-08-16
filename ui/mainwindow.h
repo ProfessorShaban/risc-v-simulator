@@ -33,7 +33,7 @@ public:
     void loadFile(const QString &fileName);
     void doBuild();
     void doBuildSim2();
-    int doPartialBuildSim2(int lineNumber);
+    int doPartialBuildSim2(int lineNumber, const char *line);
     void doRun();
     void startRun();
     void doStep();

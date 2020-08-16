@@ -85,9 +85,20 @@ bool CodeEditor::event(QEvent *event)
             if (! (keyEvent->modifiers() & Qt::ControlModifier)) {
 
                 // do partial assembly
-                int lineNumber = textCursor().blockNumber();
+
+                QTextCursor cursor = textCursor();
+                int lineNumber = cursor.blockNumber();
                 MainWindow *theMainWindow = (MainWindow*) mainWindow;
-                int result = theMainWindow->doPartialBuildSim2(lineNumber);
+
+                QTextBlock tb = document() -> findBlockByLineNumber(lineNumber);
+                QString qstr= tb.text();
+                int column = cursor.columnNumber();
+                char newChar = keyEvent->text().at(0).toLatin1();
+                qstr.insert(column, newChar);
+                QByteArray ba = qstr.toLocal8Bit();
+                const char *line = ba.data();
+
+                int result = theMainWindow->doPartialBuildSim2(lineNumber, line);
                 if (result == 0)
                     partialAssemblySuccessful = 1;
             }
@@ -418,7 +429,6 @@ void CodeEditor::onTextChanged()
 
     if (!partialAssemblySuccessful)
         theMainWindow->doBuildSim2();
-//???
 
     partialAssemblySuccessful = 0;
 }
