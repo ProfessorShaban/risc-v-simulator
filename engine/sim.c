@@ -1160,7 +1160,17 @@ assembly_instruction** assemble (simulator sim, const char *program, int address
 			assembly_instruction *instruction = assemble_line (sim, address, line, line_number);
 
 			// result of 0 indicates empty line (that's ok)
-			if (instruction != 0) {
+            if (instruction == 0) {
+                int index = *number_of_instructions;
+                result[index] = malloc (sizeof (assembly_instruction));
+                result[index]->source_line = malloc(sizeof (char) * (1 + strlen(line)));
+                copy_string (result[index]->source_line, line);
+                result[index]->address = 0;
+                result[index]->error = 0;
+                result[index]->source_line_number = line_number;
+                (*number_of_instructions) ++;
+            }
+            else {
 				result[*number_of_instructions] = instruction;
 				(*number_of_instructions) ++;
 				if (instruction -> error == 0) {
@@ -1170,13 +1180,13 @@ assembly_instruction** assemble (simulator sim, const char *program, int address
 					}
 					address += 4;
 				}
-
-				// expand result periodically
-				if ((*number_of_instructions) % 10 == 0) {
-					result = realloc (result, sizeof (assembly_instruction) * (*number_of_instructions + 10));
-				}
 			}
-		}
+
+            // expand result periodically
+            if ((*number_of_instructions) % 10 == 0) {
+                result = realloc (result, sizeof (assembly_instruction) * (*number_of_instructions + 10));
+            }
+        }
 
 		line_number ++;
 	}

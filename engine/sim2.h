@@ -5,11 +5,11 @@
 #include "sim.h"
 
 
-typedef struct {
-    int valid;
-    unsigned long long address;
-    char *line_contents;
-} assembly_line;
+//typedef struct {
+//    int valid;
+//    unsigned long long address;
+//    char *line_contents;
+//} assembly_line;
 
 typedef struct symbol_reference {
     int referenced_line;
@@ -24,8 +24,9 @@ typedef struct {
 
 typedef struct {
     simulator sim;
-    assembly_line *line_table;
-    int line_table_size;
+//    assembly_line *line_table;
+    assembly_instruction** line_table;
+//    int line_table_size;
     int num_lines;
     symbol *symbol_table;
     int symbol_table_size;

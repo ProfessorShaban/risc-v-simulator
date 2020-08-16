@@ -116,6 +116,10 @@ void DisassemblerWidget::refreshDisassembly()
     for (int i = 0; i < num_of_instructions; i++) {
         assembly_instruction *instruction = instructions[i];
 
+        // skip blank lines
+        if (instruction ->address == 0)
+            continue;
+
         if (instruction -> error == 0)
             while (address < (int) instruction -> address) {
                 // print 4 bytes
