@@ -26,14 +26,14 @@ void MemoryWidget::paintEvent(QPaintEvent *)
 
     QFontMetrics fm = QFontMetrics(font);
     QString column1Prefix("00000: ");
-    int column1XIncrement = fm.width(column1Prefix);
+    int column1XIncrement = fm.horizontalAdvance(column1Prefix);
     QString column2Prefix("00000: 00 00 00 00   ");
-    int column2XIncrement = fm.width(column2Prefix);
+    int column2XIncrement = fm.horizontalAdvance(column2Prefix);
     QString column3Prefix("00000: 00 00 00 00   00 00 00 00   ");
-    int column3XIncrement = fm.width(column3Prefix);
+    int column3XIncrement = fm.horizontalAdvance(column3Prefix);
     QString column4Prefix("00000: 00 00 00 00   00 00 00 00   00 00 00 00   ");
-    int column4XIncrement = fm.width(column4Prefix);
-    wordWidth = fm.width(QString ("00 00 00 00"));
+    int column4XIncrement = fm.horizontalAdvance(column4Prefix);
+    wordWidth = fm.horizontalAdvance(QString ("00 00 00 00"));
     wordHeight = fm.height();
 
     unsigned char *mem = get_memory(sim, address);
@@ -113,16 +113,16 @@ void MemoryWidget::containerSizeChanged(int width)
         font.setBold(true);
         QString maxString("00 00 00 00   ");
         QFontMetrics fm(font);
-        textWidth = fm.width(maxString);
+        textWidth = fm.horizontalAdvance(maxString);
 
         QString prefixString("12345: ");
-        prefixTextWidth = fm.width(prefixString);
+        prefixTextWidth = fm.horizontalAdvance(prefixString);
 
         QString singleByteString("00 ");
-        singleByteTextWidth = fm.width(singleByteString);
+        singleByteTextWidth = fm.horizontalAdvance(singleByteString);
 
         QString twoHexDigitsString("00");
-        twoHexDigitsTextWidth = fm.width(twoHexDigitsString);
+        twoHexDigitsTextWidth = fm.horizontalAdvance(twoHexDigitsString);
     }
 
     int numColumns = (width - prefixTextWidth - 10 - 20) / textWidth;

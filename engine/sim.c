@@ -1670,7 +1670,6 @@ void get_instruction_string(simulator sim, int address, char* instruction_string
         {
             unsigned long long imm = instruction -> imm31 << 5 | instruction -> imm11;
             int is_float = instruction -> mnemonic[0] == 'f' || instruction -> mnemonic[0] == 'F';
-            char register_prefix = is_float ? 'f' : 'x';
 
             if (is_float)
                 sprintf(instruction_string, "%s f%d, %lld(x%d)", format -> mnemonic,

@@ -5,6 +5,7 @@
 #include "disassemblerwidget.h"
 #include "mainwindow.h"
 #include "../engine/sim.h"
+#include "../engine/sim2.h"
 
 
 DisassemblerWidget::DisassemblerWidget()
@@ -91,14 +92,15 @@ void DisassemblerWidget::refreshDisassembly()
     if (sim == 0)
         return;
 
-    unsigned char *mem = get_memory(sim, 0);
+    MainWindow *theMainWindow = (MainWindow*) mainWindow;
+
+    unsigned char *mem = sim == theMainWindow -> sim2 ? get_memory2((simulator2 *) sim, 0) : get_memory(sim, 0);
     int increment = 4;
     int longestLine = 0;
 
     // deallocate previous lines
     DeallocateMemory();
 
-    MainWindow *theMainWindow = (MainWindow*) mainWindow;
     int address = 1000;
     numLines = 0;
     int arraySize = 10;
@@ -136,7 +138,10 @@ void DisassemblerWidget::refreshDisassembly()
         }
         else {
             // disassemble
-            get_instruction_string (sim, address, chInstruction);
+            if (sim == theMainWindow -> sim2)
+                get_instruction_string2 ((simulator2 *) sim, address, chInstruction);
+            else
+                get_instruction_string (sim, address, chInstruction);
             sprintf (lines[numLines], "%05d: %02x %02x %02x %02x  %s", address, mem[address + 0], mem[address + 1], mem[address + 2], mem[address + 3], chInstruction);
         }
 

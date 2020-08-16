@@ -199,7 +199,7 @@ void MainWindow::resetSimulator()
 {
     setCurrentFile(QString());
     sim = create_simulator(output_string, input_string);
-    sim2 = create_simulator(output_string, input_string);
+    sim2 = create_simulator2(output_string, input_string);
     instructions = 0;
     deltas_used = 0;
     ui->codeEditor->initialize(this);
@@ -259,7 +259,7 @@ MainWindow::~MainWindow()
         deallocate_assemble_results(instructions_sim2, num_of_instructions_sim2);
         instructions_sim2 = 0;
     }
-    delete_simulator(sim2);
+    delete_simulator2(sim2);
 
     delete ui;
 }
@@ -371,7 +371,7 @@ void MainWindow::doBuildSim2()
     char *str = byteArray.data();
 
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-    instructions_sim2 = assemble(sim2, str, 1000, &num_of_instructions_sim2);
+    instructions_sim2 = assemble2(sim2, str, 1000, &num_of_instructions_sim2);
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
     time_sim2 += std::chrono::duration_cast<std::chrono::nanoseconds> (end - begin).count();
 
@@ -661,7 +661,7 @@ void MainWindow::showTimes() {
     char ratio[100];
 
     sprintf(time1, "%.2f ms", (double) time_sim / 1000);
-    sprintf(time2, "%.2f ms", (double) time_sim2 / 100);
+    sprintf(time2, "%.2f ms", (double) time_sim2 / 1000);
     sprintf(ratio, "Ratio: %.2f", (double) time_sim / time_sim2);
 
     time1Text->setText(QString(time1));

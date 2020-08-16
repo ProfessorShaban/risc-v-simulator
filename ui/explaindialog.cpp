@@ -42,7 +42,7 @@ void explaindialog::drawStringAt(QPainter *painter, const char *str, int x, int 
 
     if (center) {
         QFontMetrics fm (painter->font());
-        int width = fm.width(qStr);
+        int width = fm.horizontalAdvance(qStr);
         x -= width/2;
     }
 

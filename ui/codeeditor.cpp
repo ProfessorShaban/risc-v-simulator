@@ -130,7 +130,7 @@ int CodeEditor::lineNumberAreaWidth()
 #endif
     int digits = 6;
 
-    int space = 13 + fontMetrics().width(QLatin1Char('9')) * digits;
+    int space = 13 + fontMetrics().horizontalAdvance(QLatin1Char('9')) * digits;
 
     return space;
 }

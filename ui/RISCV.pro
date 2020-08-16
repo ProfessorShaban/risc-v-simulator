@@ -24,6 +24,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 SOURCES += \
+    ../engine/sim2.c \
     codeeditor.cpp \
     disassemblerwidget.cpp \
     main.cpp \
@@ -41,6 +42,7 @@ SOURCES += \
     changeregisterdialog.cpp
 
 HEADERS += \
+    ../engine/sim2.h \
     disassemblerwidget.h \
         mainwindow.h \
     codeeditor.h \

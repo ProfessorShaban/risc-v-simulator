@@ -12,7 +12,7 @@ RegisterWidget::RegisterWidget()
     QString maxString("x01: 0x0000000000000000");
     QFont font ("Courier New");
     QFontMetrics fm(font);
-    int textWidth = fm.width(maxString);
+    int textWidth = fm.horizontalAdvance(maxString);
     registerWidth = textWidth + 4;
     registerHeight = 16;
 }
@@ -29,7 +29,7 @@ void RegisterWidget::paintEvent(QPaintEvent *)
 
     QString maxString("x01: 0x0000000000000000");
     QFontMetrics fm(font);
-    int textWidth = fm.width(maxString);
+    int textWidth = fm.horizontalAdvance(maxString);
 
     QColor green = QColor(180,255,180);
 
@@ -161,7 +161,7 @@ void RegisterWidget::containerSizeChanged(int width)
         font.setBold(true);
         QString maxString("x01: 0x0000000000000000");
         QFontMetrics fm(font);
-        textWidth = fm.width(maxString);
+        textWidth = fm.horizontalAdvance(maxString);
     }
 
     int numColumns = width / (textWidth + 32);

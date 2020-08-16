@@ -36,7 +36,7 @@ void explainintdialog::drawStringAt(QPainter *painter, const char *str, int x, i
 
     if (center) {
         QFontMetrics fm (painter->font());
-        int width = fm.width(qStr);
+        int width = fm.horizontalAdvance(qStr);
         x -= width/2;
     }
 
@@ -95,10 +95,10 @@ void explainintdialog::widgetPaintEvent(QPaintEvent *)
     y += 48;
     if (value >= 0) {
         sprintf(str, "0x%08x", value);
-        int strWidth = fm.width(QString(str));
+        int strWidth = fm.horizontalAdvance(QString(str));
         drawStringAt(&painter, str, width - strWidth - 24, y);
         sprintf(str, "%d", value);
-        strWidth = fm.width(QString(str));
+        strWidth = fm.horizontalAdvance(QString(str));
         drawStringAt(&painter, str, width - strWidth - 24, y + 20);
     }
     else {
@@ -123,11 +123,11 @@ void explainintdialog::widgetPaintEvent(QPaintEvent *)
 
         y += 40;
         sprintf(str, "+1");
-        int strWidth = fm.width(QString(str));
+        int strWidth = fm.horizontalAdvance(QString(str));
         drawStringAt(&painter, str, width - strWidth - 24, y);
         y += 20;
         sprintf(str, "Result: %d", value);
-        strWidth = fm.width(QString(str));
+        strWidth = fm.horizontalAdvance(QString(str));
         drawStringAt(&painter, str, width - strWidth - 24, y);
     }
 }

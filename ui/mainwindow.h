@@ -8,6 +8,7 @@
 
 #define FROM_CPP
 #include "../engine/sim.h"
+#include "../engine/sim2.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -115,7 +116,7 @@ public:
     simulator sim;
     assembly_instruction **instructions;
     int num_of_instructions;
-    simulator sim2;
+    simulator2 *sim2;
     assembly_instruction **instructions_sim2;
     int num_of_instructions_sim2;
     delta deltas[100];
