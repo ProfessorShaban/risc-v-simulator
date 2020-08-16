@@ -25,7 +25,11 @@ typedef struct {
 typedef struct {
     simulator sim;
     assembly_line *line_table;
+    int line_table_size;
+    int num_lines;
     symbol *symbol_table;
+    int symbol_table_size;
+    int num_symbols;
 } simulator2;
 
 
