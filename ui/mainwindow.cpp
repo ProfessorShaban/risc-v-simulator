@@ -1,6 +1,7 @@
 
 #include <QtWidgets>
 #include <QFormLayout>
+#include <chrono>
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
@@ -174,6 +175,18 @@ MainWindow::MainWindow(QWidget *parent) :
     setFont();
 
     resetSimulator();
+
+    resetTimers();
+
+    timer = new QTimer(this);
+    connect(timer, SIGNAL(timeout()), this, SLOT(showTimes()));
+    timer -> start(1000);
+}
+
+void MainWindow::resetTimers()
+{
+    time_sim = time_sim2 = 0;
+    showTimes();
 }
 
 void MainWindow::doResetSimulator()
@@ -323,6 +336,7 @@ void MainWindow::updateDisplay()
     memoryWidget->update();
     disassemblerWidget->update();
     disassemblerWidget2->update();
+    compareDisassemblies();
 }
 
 void MainWindow::doBuild()
@@ -335,7 +349,12 @@ void MainWindow::doBuild()
     QString programStr = ui->codeEditor->toPlainText();
     QByteArray byteArray = programStr.toLocal8Bit();
     char *str = byteArray.data();
+
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
     instructions = assemble(sim, str, 1000, &num_of_instructions);
+    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+    time_sim += std::chrono::duration_cast<std::chrono::nanoseconds> (end - begin).count();
+
     disassemblerWidget -> refreshDisassembly();
     updateDisplay();
 }
@@ -350,9 +369,34 @@ void MainWindow::doBuildSim2()
     QString programStr = ui->codeEditor->toPlainText();
     QByteArray byteArray = programStr.toLocal8Bit();
     char *str = byteArray.data();
+
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
     instructions_sim2 = assemble(sim2, str, 1000, &num_of_instructions_sim2);
+    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+    time_sim2 += std::chrono::duration_cast<std::chrono::nanoseconds> (end - begin).count();
+
     disassemblerWidget2 -> refreshDisassembly();
     updateDisplay();
+}
+
+// returns 0 for success, 1 otherwise
+int MainWindow::doPartialBuildSim2(int lineNumber) {
+
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+
+//??? do partial assembly
+
+    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+    time_sim2 += std::chrono::duration_cast<std::chrono::nanoseconds> (end - begin).count();
+
+    compareDisassemblies();
+
+    return 0;
+}
+
+void MainWindow::compareDisassemblies() {
+    disassemblerWidget->compareTo(disassemblerWidget2);
+    disassemblerWidget2->compareTo(disassemblerWidget);
 }
 
 void MainWindow::doRun()
@@ -461,6 +505,11 @@ void MainWindow::createActions()
 
     QAction *resetAct = fileMenu->addAction(tr("Reset Simulator"), this, &MainWindow::doResetSimulator);
     resetAct->setStatusTip(tr("Reset the simulator"));
+
+    fileMenu->addSeparator();
+
+    QAction *resetTimersAct = fileMenu->addAction(tr("Reset Timers"), this, &MainWindow::resetTimers);
+    resetTimersAct->setStatusTip(tr("Reset the timers"));
 
     fileMenu->addSeparator();
 
@@ -588,7 +637,36 @@ void MainWindow::timerEvent(QTimerEvent *)
 
 void MainWindow::createStatusBar()
 {
-    statusBar()->showMessage(tr("Ready"));
+    statusText = new QLabel();
+    time1Text = new QLabel();
+    time2Text = new QLabel();
+    timeRatioText = new QLabel();
+
+    statusBar() -> addWidget(statusText);
+    statusBar() -> addPermanentWidget(time1Text);
+    statusBar() -> addPermanentWidget(time2Text);
+    statusBar() -> addPermanentWidget(timeRatioText);
+
+    setStatusBarText("Ready");
+}
+
+void MainWindow::setStatusBarText(const char text[]) {
+    statusText->setText(QString(text));
+}
+
+void MainWindow::showTimes() {
+
+    char time1[100];
+    char time2[100];
+    char ratio[100];
+
+    sprintf(time1, "%.2f ms", (double) time_sim / 1000);
+    sprintf(time2, "%.2f ms", (double) time_sim2 / 100);
+    sprintf(ratio, "Ratio: %.2f", (double) time_sim / time_sim2);
+
+    time1Text->setText(QString(time1));
+    time2Text->setText(QString(time2));
+    timeRatioText->setText(QString(ratio));
 }
 
 void MainWindow::readSettings()

@@ -15,6 +15,7 @@ class QAction;
 class QMenu;
 class QPlainTextEdit;
 class QSessionManager;
+class QLabel;
 QT_END_NAMESPACE
 
 namespace Ui {
@@ -31,6 +32,7 @@ public:
     void loadFile(const QString &fileName);
     void doBuild();
     void doBuildSim2();
+    int doPartialBuildSim2(int lineNumber);
     void doRun();
     void startRun();
     void doStep();
@@ -57,6 +59,10 @@ private:
     QWidget* disassemblerContainerWidget;
     QWidget* disassemblerContainerWidget2;
     QAction *animateAct;
+    QLabel *statusText;
+    QLabel *time1Text;
+    QLabel *time2Text;
+    QLabel *timeRatioText;
     bool animating = false;
     int animateMilliseconds = 200;
     int fontSize = 12;
@@ -72,6 +78,7 @@ private slots:
     bool saveAs();
     void about();
     void documentWasModified();
+    void showTimes();
 
 #ifndef QT_NO_SESSIONMANAGER
     void commitData(QSessionManager &);
@@ -92,9 +99,17 @@ private:
     bool saveFile(const QString &fileName);
     void setCurrentFile(const QString &fileName);
     QString strippedName(const QString &fullFileName);
+    void resetTimers();
+    void setStatusBarText(const char text[]);
+    void compareDisassemblies();
 
     QString curFile;
     int timerId;
+
+    QTimer *timer;
+
+    long long time_sim;   // milliseconds
+    long long time_sim2;  // milliseconds
 
 public:
     simulator sim;

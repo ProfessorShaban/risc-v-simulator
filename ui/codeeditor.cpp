@@ -85,12 +85,11 @@ bool CodeEditor::event(QEvent *event)
             if (! (keyEvent->modifiers() & Qt::ControlModifier)) {
 
                 // do partial assembly
-
                 int lineNumber = textCursor().blockNumber();
-
-//???
-
-                partialAssemblySuccessful = 1;
+                MainWindow *theMainWindow = (MainWindow*) mainWindow;
+                int result = theMainWindow->doPartialBuildSim2(lineNumber);
+                if (result == 0)
+                    partialAssemblySuccessful = 1;
             }
         }
     }

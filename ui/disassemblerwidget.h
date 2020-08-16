@@ -8,6 +8,9 @@
 #define FROM_CPP
 #include "../engine/sim.h"
 
+// compare max of 500 lines
+#define COMPARE_MAX_LINES 500
+
 
 class DisassemblerWidget : public QWidget
 {
@@ -18,6 +21,7 @@ public:
     void Initialize(simulator sim, void *mainWindow);
     void containerSizeChanged(int width);
     void refreshDisassembly();
+    void compareTo(DisassemblerWidget *otherWidget);
 
     void paintEvent(QPaintEvent *) override;
 
@@ -41,6 +45,7 @@ private:
 
     char **lines = 0;
     int numLines = 0;
+    int compareFlags[COMPARE_MAX_LINES];
 };
 
 #endif // DISASSEMBLERWIDGET_H

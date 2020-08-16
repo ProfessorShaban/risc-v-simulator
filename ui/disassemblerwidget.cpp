@@ -28,6 +28,8 @@ void DisassemblerWidget::paintEvent(QPaintEvent *)
     if (lines == 0)
         return;
 
+    QColor red = QColor(255,180,180);
+
     QPainter p{this};
     p.setRenderHint(QPainter::Antialiasing);
 
@@ -40,6 +42,9 @@ void DisassemblerWidget::paintEvent(QPaintEvent *)
     QString column1Prefix("00000: ");
     int column1XIncrement = fm.horizontalAdvance(column1Prefix);
     wordHeight = fm.height();
+
+    QString bytesText("00 00 00 00");
+    int bytesWidth = fm.horizontalAdvance(bytesText);
 
     QString oneCharString("0");
     charWidth = fm.horizontalAdvance(oneCharString);
@@ -56,6 +61,9 @@ void DisassemblerWidget::paintEvent(QPaintEvent *)
         int yForArray = y - wordHeight / 2;
         wordXPos[i / 4] = x + column1XIncrement;
         wordYPos[i / 4] = yForArray;
+
+        if (compareFlags[line])
+            p.fillRect(x + column1XIncrement - 2, y - 11, bytesWidth + 4, 16, red);
 
         p.drawText(x, y, *str);
     }
@@ -147,4 +155,17 @@ void DisassemblerWidget::refreshDisassembly()
     // set width properly
     textWidth = charWidth * (longestLine + 3);
     resize(textWidth, 18 * (numLines + 1));
+}
+
+void DisassemblerWidget::compareTo(DisassemblerWidget *otherWidget) {
+    for (int i = 0; i < COMPARE_MAX_LINES; i++)
+        compareFlags[i] = 0;
+
+    for (int i = 0; i < numLines; i++) {
+        if (i >= otherWidget -> numLines ||
+                (i < otherWidget -> numLines && strcmp(lines[i], otherWidget -> lines[i])))
+            compareFlags[i] = 1;
+    }
+
+    update();
 }
