@@ -30,6 +30,7 @@ public:
     ~MainWindow();
     void loadFile(const QString &fileName);
     void doBuild();
+    void doBuildSim2();
     void doRun();
     void startRun();
     void doStep();
@@ -50,9 +51,11 @@ private:
     RegisterWidget *registerWidget;
     MemoryWidget *memoryWidget;
     DisassemblerWidget *disassemblerWidget;
+    DisassemblerWidget *disassemblerWidget2;
     QWidget* registerContainerWidget;
     QWidget* memoryContainerWidget;
     QWidget* disassemblerContainerWidget;
+    QWidget* disassemblerContainerWidget2;
     QAction *animateAct;
     bool animating = false;
     int animateMilliseconds = 200;
@@ -97,6 +100,9 @@ public:
     simulator sim;
     assembly_instruction **instructions;
     int num_of_instructions;
+    simulator sim2;
+    assembly_instruction **instructions_sim2;
+    int num_of_instructions_sim2;
     delta deltas[100];
     int num_deltas = 100;
     int deltas_used = 0;

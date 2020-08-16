@@ -143,6 +143,32 @@ MainWindow::MainWindow(QWidget *parent) :
     //disassemblerContainerWidget->setStyleSheet("border: 1px solid red");
     disassemblerContainerWidget->installEventFilter(this);
 
+    // set up disassembler widget 2
+    containerWidget = new QWidget();
+    containerWidget->setLayout(new QVBoxLayout);
+
+    disassemblerWidget2 = new DisassemblerWidget();
+    disassemblerWidget2->setLayout(new QVBoxLayout);
+    disassemblerWidget2->layout()->setAlignment(Qt::AlignTop);
+
+    QScrollArea *disassemblerScrollArea2 = new QScrollArea();
+    disassemblerScrollArea2->setWidget(disassemblerWidget2);
+    disassemblerScrollArea2->setFrameShape(QFrame::NoFrame);
+
+    containerWidget->layout()->addWidget(disassemblerScrollArea2);
+
+    // set up disassembler layout
+    disassemblerContainerWidget2 = new QWidget();
+    gridLayout = new QGridLayout();
+    gridLayout->addWidget(containerWidget, 2, 1, 1, 2);
+    //    gridLayout->setColumnStretch(1, 0);
+    disassemblerContainerWidget2->setLayout(gridLayout);
+    ui->dockWidgetDisassembler2->setWidget(disassemblerContainerWidget2);
+    gridLayout->setContentsMargins(0, 0, 0, 0);
+
+    //disassemblerContainerWidget->setStyleSheet("border: 1px solid red");
+    disassemblerContainerWidget2->installEventFilter(this);
+
     setUnifiedTitleAndToolBarOnMac(true);
 
     setFont();
@@ -160,12 +186,17 @@ void MainWindow::resetSimulator()
 {
     setCurrentFile(QString());
     sim = create_simulator(output_string, input_string);
+    sim2 = create_simulator(output_string, input_string);
     instructions = 0;
     deltas_used = 0;
     ui->codeEditor->initialize(this);
     registerWidget->Initialize(sim, this);
     memoryWidget->Initialize(sim, this);
     disassemblerWidget->Initialize(sim, this);
+
+    disassemblerWidget2->Initialize(sim2, this);
+    instructions_sim2 = 0;
+
     doBuild();
 }
 
@@ -177,6 +208,8 @@ bool MainWindow::eventFilter(QObject *object, QEvent *event)
         memoryWidget->containerSizeChanged(memoryContainerWidget->width());
     if (object == disassemblerContainerWidget && event->type() == QEvent::Resize)
         disassemblerWidget->containerSizeChanged(disassemblerContainerWidget->width());
+    if (object == disassemblerContainerWidget2 && event->type() == QEvent::Resize)
+        disassemblerWidget2->containerSizeChanged(disassemblerContainerWidget2->width());
     return false;
 }
 
@@ -208,6 +241,13 @@ MainWindow::~MainWindow()
         instructions = 0;
     }
     delete_simulator(sim);
+
+    if (instructions_sim2 != 0) {
+        deallocate_assemble_results(instructions_sim2, num_of_instructions_sim2);
+        instructions_sim2 = 0;
+    }
+    delete_simulator(sim2);
+
     delete ui;
 }
 
@@ -282,6 +322,7 @@ void MainWindow::updateDisplay()
     registerWidget->update();
     memoryWidget->update();
     disassemblerWidget->update();
+    disassemblerWidget2->update();
 }
 
 void MainWindow::doBuild()
@@ -296,6 +337,21 @@ void MainWindow::doBuild()
     char *str = byteArray.data();
     instructions = assemble(sim, str, 1000, &num_of_instructions);
     disassemblerWidget -> refreshDisassembly();
+    updateDisplay();
+}
+
+void MainWindow::doBuildSim2()
+{
+    if (instructions_sim2 != 0) {
+        deallocate_assemble_results(instructions_sim2, num_of_instructions_sim2);
+        instructions_sim2 = 0;
+    }
+
+    QString programStr = ui->codeEditor->toPlainText();
+    QByteArray byteArray = programStr.toLocal8Bit();
+    char *str = byteArray.data();
+    instructions_sim2 = assemble(sim2, str, 1000, &num_of_instructions_sim2);
+    disassemblerWidget2 -> refreshDisassembly();
     updateDisplay();
 }
 
@@ -459,6 +515,7 @@ void MainWindow::createActions()
     viewMenu->addAction(ui->dockWidgetMemory->toggleViewAction());
     viewMenu->addAction(ui->dockWidgetConsole->toggleViewAction());
     viewMenu->addAction(ui->dockWidgetDisassembler->toggleViewAction());
+    viewMenu->addAction(ui->dockWidgetDisassembler2->toggleViewAction());
     viewMenu->addSeparator();
 
     QAction *decreaseFontSizeAction = new QAction(tr("Decrease Font Size"), this);

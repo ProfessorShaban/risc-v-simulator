@@ -66,6 +66,8 @@ private:
     QImage *breakpointImage;
     QImage *pcImage;
     QImage *errorImage;
+
+    int partialAssemblySuccessful;
 };
 
 class LineNumberArea : public QWidget

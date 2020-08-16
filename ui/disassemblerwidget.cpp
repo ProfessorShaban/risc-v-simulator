@@ -20,10 +20,14 @@ void DisassemblerWidget::DeallocateMemory() {
     }
 
     numLines = 0;
+    lines = 0;
 }
 
 void DisassemblerWidget::paintEvent(QPaintEvent *)
 {
+    if (lines == 0)
+        return;
+
     QPainter p{this};
     p.setRenderHint(QPainter::Antialiasing);
 
@@ -91,20 +95,29 @@ void DisassemblerWidget::refreshDisassembly()
     numLines = 0;
     int arraySize = 10;
     lines = (char **) malloc(sizeof(char *) * (arraySize + 1));
-    for (int i = 0; i < theMainWindow -> num_of_instructions; i++) {
-        assembly_instruction *instruction = theMainWindow -> instructions[i];
 
-        while (address < (int) instruction -> address) {
-            // print 4 bytes
-            lines[numLines] = (char *) malloc(sizeof(char) * 150);
-            sprintf (lines[numLines], "%05d: %02x %02x %02x %02x", address, mem[address + 0], mem[address + 1], mem[address + 2], mem[address + 3]);
-            address += increment;
-            numLines ++;
-            if (numLines + 1 >= arraySize) {
-                arraySize += 10;
-                lines = (char **) realloc (lines, sizeof (char *) * (arraySize + 1));
+    int num_of_instructions = theMainWindow -> num_of_instructions;
+    assembly_instruction **instructions = theMainWindow -> instructions;
+    if (sim == theMainWindow -> sim2) {
+        num_of_instructions = theMainWindow -> num_of_instructions_sim2;
+        instructions = theMainWindow -> instructions_sim2;
+    }
+
+    for (int i = 0; i < num_of_instructions; i++) {
+        assembly_instruction *instruction = instructions[i];
+
+        if (instruction -> error == 0)
+            while (address < (int) instruction -> address) {
+                // print 4 bytes
+                lines[numLines] = (char *) malloc(sizeof(char) * 150);
+                sprintf (lines[numLines], "%05d: %02x %02x %02x %02x", address, mem[address + 0], mem[address + 1], mem[address + 2], mem[address + 3]);
+                address += increment;
+                numLines ++;
+                if (numLines + 1 >= arraySize) {
+                    arraySize += 10;
+                    lines = (char **) realloc (lines, sizeof (char *) * (arraySize + 1));
+                }
             }
-        }
 
         lines[numLines] = (char *) malloc(sizeof(char) * 150);
         char chInstruction [100];

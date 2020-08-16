@@ -23,6 +23,8 @@ CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
     updateLineNumberAreaWidth(0);
     highlightCurrentLine();
 
+    partialAssemblySuccessful = 0;
+
     QFont font = document()->defaultFont();
     font.setFamily("Courier New");
     font.setPointSize(11);
@@ -44,29 +46,56 @@ void CodeEditor::initialize(void *mainWindow)
 bool CodeEditor::event(QEvent *event)
 {
     if (event->type() == QEvent::ToolTip) {
-           QHelpEvent *helpEvent = static_cast<QHelpEvent *>(event);
-           int x = helpEvent->pos().x();
-           int y = helpEvent->pos().y();
+        QHelpEvent *helpEvent = static_cast<QHelpEvent *>(event);
+        int x = helpEvent->pos().x();
+        int y = helpEvent->pos().y();
 
-           // we are only interested in error message icon
-           if (x >= 12 && x <= 24) {
+        // we are only interested in error message icon
+        if (x >= 12 && x <= 24) {
 
-               int lineNumber = lineNumberFromY(y);
+            int lineNumber = lineNumberFromY(y);
 
-               char error_message[250];
-               lineNumberToErrorMessage(lineNumber, error_message, sizeof(error_message)-1);
+            char error_message[250];
+            lineNumberToErrorMessage(lineNumber, error_message, sizeof(error_message)-1);
 
-               if (error_message[0]) {
-                   QString toolTipStr = QString(error_message);
-                   QToolTip::showText(helpEvent->globalPos(), toolTipStr);
-               } else {
-                   QToolTip::hideText();
-                   event->ignore();
-               }
-               return true;
-           }
-       }
-       return QPlainTextEdit::event(event);
+            if (error_message[0]) {
+                QString toolTipStr = QString(error_message);
+                QToolTip::showText(helpEvent->globalPos(), toolTipStr);
+            } else {
+                QToolTip::hideText();
+                event->ignore();
+            }
+            return true;
+        }
+    }
+
+    if (event->type() == QEvent::KeyPress) {
+        partialAssemblySuccessful = 0;
+
+        QKeyEvent *keyEvent = (QKeyEvent *) event;
+
+        int key = keyEvent -> key();
+        if ((key >= 'a' && key <= 'z') ||
+                (key >= 'A' && key <= 'Z') ||
+                (key >= '0' && key <= '9') ||
+                key == ' ' ||
+                key == '-' ||
+                key == ',') {
+
+            if (! (keyEvent->modifiers() & Qt::ControlModifier)) {
+
+                // do partial assembly
+
+                int lineNumber = textCursor().blockNumber();
+
+//???
+
+                partialAssemblySuccessful = 1;
+            }
+        }
+    }
+
+    return QPlainTextEdit::event(event);
 }
 
 int CodeEditor::lineNumberFromY(int y)
@@ -387,6 +416,12 @@ void CodeEditor::onTextChanged()
 {
     MainWindow *theMainWindow = (MainWindow*) mainWindow;
     theMainWindow->doBuild();
+
+    if (!partialAssemblySuccessful)
+        theMainWindow->doBuildSim2();
+//???
+
+    partialAssemblySuccessful = 0;
 }
 
 void CodeEditor::ensurePCVisible()
