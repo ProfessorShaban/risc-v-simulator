@@ -5,32 +5,10 @@
 #include "sim.h"
 
 
-//typedef struct {
-//    int valid;
-//    unsigned long long address;
-//    char *line_contents;
-//} assembly_line;
-
-typedef struct symbol_reference {
-    int referenced_line;
-    struct symbol_reference *next;
-} symbol_reference;
-
-typedef struct {
-    char *label;
-    int declared_line;
-    symbol_reference *references;
-} symbol;
-
 typedef struct {
     simulator sim;
-//    assembly_line *line_table;
     assembly_instruction** line_table;
-//    int line_table_size;
     int num_lines;
-    symbol *symbol_table;
-    int symbol_table_size;
-    int num_symbols;
 } simulator2;
 
 

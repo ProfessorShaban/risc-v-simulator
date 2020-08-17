@@ -277,11 +277,20 @@ simulator create_simulator(OutputString *outputStringCallback, InputString input
 	return (simulator) sim;
 }
 
+void deallocate_label_references (label_reference *reference)
+{
+    if (reference == 0)
+        return;
+    deallocate_label_references(reference->next);
+    free(reference);
+}
+
 void deallocate_labels (label *label)
 {
 	if (label == 0)
 		return;
-	deallocate_labels (label -> next_label);
+    deallocate_labels (label->next);
+    deallocate_label_references (label->references);
 	free(label);
 }
 
@@ -529,9 +538,17 @@ int get_immediate_or_offset (char *line, int *index, assembly_instruction *instr
         while (labels != 0) {
             if (!stricmp(labels -> label, token)) {
                 *imm = (int) ((labels -> address - address)/2);
+
+                // add this reference to the label
+                label_reference *reference = malloc(sizeof(label_reference));
+                reference->next = labels->references;
+                labels->references = reference;
+                reference->address = address;
+                reference->line_number = instruction->source_line_number;
+
                 return 0;
             }
-            labels = labels -> next_label;
+            labels = labels -> next;
         }
 
         instruction -> error = 1;
@@ -1116,7 +1133,9 @@ assembly_instruction** assemble (simulator sim, const char *program, int address
 
 				label *new_label = malloc (sizeof(label));
 				new_label -> address = preprocess_address;
-				new_label -> next_label = simi -> labels;
+                new_label -> next = simi -> labels;
+                new_label -> references = 0;
+                new_label -> line_number = line_number;
 				copy_string (new_label -> label, token);
 				simi -> labels = new_label;
 

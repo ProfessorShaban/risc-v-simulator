@@ -1,12 +1,17 @@
 
+typedef struct label_reference {
+    unsigned long long address;  // memory address
+    int line_number;
+    struct label_reference *next;
+} label_reference;
 
-typedef struct label label;
-
-struct label {
+typedef struct label {
 	char label[128];
 	unsigned long long address;  // memory address
-	label *next_label;
-};
+    int line_number;
+    label_reference *references;
+    struct label *next;
+} label;
 
 typedef struct {
 	unsigned long long int *reg;		// registers
