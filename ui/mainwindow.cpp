@@ -733,6 +733,8 @@ void MainWindow::loadFile(const QString &fileName)
     statusBar()->showMessage(tr("File loaded"), 2000);
 
     doBuild();
+
+    resetTimers();
 }
 
 bool MainWindow::saveFile(const QString &fileName)

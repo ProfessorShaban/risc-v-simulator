@@ -853,7 +853,7 @@ assembly_instruction* assemble_line (simulator *sim, int address, const char *li
 	char token[128];
 	int index = 0;
 	get_token (line, &index, token);
-	if (token[0] == 0)	// empty line
+    if (token[0] == 0) 	// empty line
 		return 0;
 
     // check for label
@@ -882,6 +882,7 @@ assembly_instruction* assemble_line (simulator *sim, int address, const char *li
     if (format == 0) {
         instruction -> error = 1;
         instruction -> error_message = "Unrecognized instruction";
+        instruction -> address = 0;
         return instruction;
     }
 

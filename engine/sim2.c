@@ -51,8 +51,17 @@ int do_partial_assembly(simulator2 *sim, int lineNumber, const char* line)
         return 1;
 
     assembly_instruction *old_instruction = sim->line_table[lineNumber];
-    int address = old_instruction->address;
+    int oldAddress = old_instruction->address;
     simulator_internal *simi = (simulator_internal *) sim->sim;
+
+    // find starting address for this line, if its address is 0. Work backward and find the previous line with a valid address, then add one word
+    int address = 1000;
+    for (int i = lineNumber - 1; i >= 0; i--) {
+        if (sim->line_table[i]->address > 0) {
+            address = sim->line_table[i]->address + 4;
+            break;
+        }
+    }
 
     // if either the prior version, or the new version of the line contain a label definition, fail and do full assembly
     if (strchr(old_instruction->source_line, ':') != 0 || strchr(line, ':') != 0)
@@ -68,15 +77,30 @@ int do_partial_assembly(simulator2 *sim, int lineNumber, const char* line)
     assembly_instruction *instruction = assemble_line (sim->sim, address, line, lineNumber, old_instruction /* reuse_instruction */);
 
     // if instruction is null, and existing instruction is null, nothing to do except replace existing instruction with new one
-    if (instruction != 0 && instruction->address == 0 && old_instruction->address == 0)
+    if (instruction != 0 && instruction->address == 0 && oldAddress == 0)
         return 0;
 
     // if instruction is not null, and existing instruction is not null, replace existing instruction with new instruction
-    if (instruction != 0 && old_instruction->address != 0)
+    if (instruction != 0 && instruction->address != 0 && oldAddress != 0)
         return 0;
 
-    // ??? if instruction is null, and existing instruction is not null, shift everything below this line up (line deleted)
-    // ??? if instruction is not null, and existing instruction is null, shift everything below this line down (line inserted)
+    // if instruction is not null, and existing instruction is null, shift everything below this line down (line inserted)
+    if (instruction != 0 && instruction->address != 0 && oldAddress == 0) {
+        // move all subsequent instructions down by one word
+        for (int i = lineNumber + 1; i < sim->num_lines; i++)
+            sim->line_table[i]->address += 4;
+
+        // move instructions in memory down by one word
+        for (unsigned long long i = sim->line_table[sim->num_lines-1]->address; i > sim->line_table[lineNumber]->address; i -= 4)
+            for (int j = 0; j < 4; j++)
+                simi->memory[i+j+4] = simi->memory[i+j];
+        for (int j = 0; j < 4; j++)
+            simi->memory[sim->line_table[lineNumber]->address + j + 4] = simi->memory[sim->line_table[lineNumber]->address + j];
+
+        return 0;
+    }
+
+// ??? if instruction is null, and existing instruction is not null, shift everything below this line up (line deleted)
 
     return 1;
 }

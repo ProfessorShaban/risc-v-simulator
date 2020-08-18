@@ -93,14 +93,16 @@ bool CodeEditor::event(QEvent *event)
                 QTextBlock tb = document() -> findBlockByLineNumber(lineNumber);
                 QString qstr= tb.text();
                 int column = cursor.columnNumber();
-                char newChar = keyEvent->text().at(0).toLatin1();
-                qstr.insert(column, newChar);
-                QByteArray ba = qstr.toLocal8Bit();
-                const char *line = ba.data();
+                if (keyEvent->text().length() > 0) {
+                    char newChar = keyEvent->text().at(0).toLatin1();
+                    qstr.insert(column, newChar);
+                    QByteArray ba = qstr.toLocal8Bit();
+                    const char *line = ba.data();
 
-                int result = theMainWindow->doPartialBuildSim2(lineNumber, line);
-                if (result == 0)
-                    partialAssemblySuccessful = 1;
+                    int result = theMainWindow->doPartialBuildSim2(lineNumber, line);
+                    if (result == 0)
+                        partialAssemblySuccessful = 1;
+                }
             }
         }
     }
