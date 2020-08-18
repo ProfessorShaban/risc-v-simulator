@@ -8,8 +8,8 @@
 #define FROM_CPP
 #include "../engine/sim.h"
 
-// compare max of 500 lines
-#define COMPARE_MAX_LINES 500
+// show max of 500 lines
+#define SHOW_MAX_LINES 500
 
 
 class DisassemblerWidget : public QWidget
@@ -39,13 +39,13 @@ private:
     int singleByteTextWidth = 0;
     int twoHexDigitsTextWidth = 0;
     QPoint clickPos;
-    int wordXPos[260];
-    int wordYPos[260];
+    int wordXPos[SHOW_MAX_LINES];
+    int wordYPos[SHOW_MAX_LINES];
     int wordHeight = 0;
 
-    char **lines = 0;
+    char *lines[SHOW_MAX_LINES];
     int numLines = 0;
-    int compareFlags[COMPARE_MAX_LINES];
+    int compareFlags[SHOW_MAX_LINES];
 };
 
 #endif // DISASSEMBLERWIDGET_H

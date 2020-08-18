@@ -389,6 +389,7 @@ int MainWindow::doPartialBuildSim2(int lineNumber, const char *line) {
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
     time_sim2 += std::chrono::duration_cast<std::chrono::nanoseconds> (end - begin).count();
 
+    disassemblerWidget2 -> refreshDisassembly();
     compareDisassemblies();
 
     return result;

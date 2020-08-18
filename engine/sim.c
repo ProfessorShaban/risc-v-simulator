@@ -348,7 +348,7 @@ void get_line (char *line, const char *program, int *index, int line_size)
 	line[line_index] = 0;
 }
 
-void get_token (char *line, int *index, char *token)
+void get_token (const char *line, int *index, char *token)
 {
 	token[0] = 0;
 
@@ -846,7 +846,7 @@ void translate_pseudoinstruction(char *token, char *line, int *index)
         }
 }
 
-assembly_instruction* assemble_line (simulator *sim, int address, char *line, int line_number)
+assembly_instruction* assemble_line (simulator *sim, int address, const char *line, int line_number, assembly_instruction *reuse_instruction)
 {
 	simulator_internal *simi = (simulator_internal *) sim;
 
@@ -870,25 +870,23 @@ assembly_instruction* assemble_line (simulator *sim, int address, char *line, in
 
 	translate_pseudoinstruction (token, line, &index);
 
-    assembly_instruction *instruction = malloc (sizeof (assembly_instruction));
+    assembly_instruction *instruction = reuse_instruction != 0 ? reuse_instruction : malloc (sizeof (assembly_instruction));
 
-	instruction -> source_line = malloc (strlen(line) * sizeof(char) + 2);
-	copy_string(instruction -> source_line, line);
+    instruction -> address = address;
+    simi->memory[address+0] = simi->memory[address+1] = simi->memory[address+2] = simi->memory[address+3] = 0xff;
+    copy_string_len(instruction -> source_line, line, SOURCE_LINE_MAX);
+    instruction -> source_line_number = line_number;
 
     // find instruction format
     instruction_format *format = get_instruction_format (token);
     if (format == 0) {
         instruction -> error = 1;
         instruction -> error_message = "Unrecognized instruction";
-        instruction -> source_line_number = line_number;
-        instruction -> source_line = line;
         return instruction;
     }
 
-	instruction -> source_line_number = line_number;
 	instruction -> error = 0;
 	instruction -> error_message = 0;
-	instruction -> address = address;
 
     instruction -> format = format -> format;
     instruction -> opcode = format -> opcode;
@@ -933,7 +931,7 @@ assembly_instruction* assemble_line (simulator *sim, int address, char *line, in
             instruction -> error_message = "Unrecognized instruction";
             return instruction;
     }
-    
+
     if (error_occurred)
         return instruction; // instruction contains error message
 
@@ -1176,14 +1174,13 @@ assembly_instruction** assemble (simulator sim, const char *program, int address
 
 		if (!success) {
 
-			assembly_instruction *instruction = assemble_line (sim, address, line, line_number);
+            assembly_instruction *instruction = assemble_line (sim, address, line, line_number, NULL);
 
 			// result of 0 indicates empty line (that's ok)
             if (instruction == 0) {
                 int index = *number_of_instructions;
                 result[index] = malloc (sizeof (assembly_instruction));
-                result[index]->source_line = malloc(sizeof (char) * (1 + strlen(line)));
-                copy_string (result[index]->source_line, line);
+                copy_string_len(result[index]->source_line, line, SOURCE_LINE_MAX);
                 result[index]->address = 0;
                 result[index]->error = 0;
                 result[index]->source_line_number = line_number;
@@ -1197,9 +1194,9 @@ assembly_instruction** assemble (simulator sim, const char *program, int address
 						pc_initialized = 1;
 						simi -> pc = address;
 					}
-					address += 4;
 				}
-			}
+                address += 4;
+            }
 
             // expand result periodically
             if ((*number_of_instructions) % 10 == 0) {

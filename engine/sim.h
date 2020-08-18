@@ -4,6 +4,8 @@
 
 
 #define MEMSIZE 1000000		// memory is this many bytes
+#define SOURCE_LINE_MAX 48  // this only applies to the stored source line within the line table. The actual source line can be any length
+
 
 typedef void OutputString (const char *);
 typedef const char * InputString (void);
@@ -24,7 +26,7 @@ typedef struct {
 	int error;			// 1 in case of error, 0 otherwise
 	char *error_message;
 	unsigned long long address;
-	char *source_line;
+    char source_line[SOURCE_LINE_MAX+1];
 	char *mnemonic;
 	char format;
 	unsigned int instruction;
@@ -52,6 +54,7 @@ extern "C" void do_step(simulator sim, char **error_message, delta *deltas, int 
 extern "C" int is_stopped(simulator sim);
 extern "C" void reset_stop(simulator sim);
 extern "C" void get_instruction_string(simulator sim, int address, char *instruction_string);
+extern "C" assembly_instruction* assemble_line (simulator *sim, int address, const char *line, int line_number, assembly_instruction *reuse_instruction);
 
 extern "C" void add_breakpoint (simulator sim, int address);
 extern "C" void delete_breakpoint (simulator sim, int address);
@@ -77,6 +80,7 @@ void do_step(simulator sim, char **error_message, delta *deltas, int num_deltas,
 int is_stopped(simulator sim);
 void reset_stop(simulator sim);
 void get_instruction_string(simulator sim, int address, char *instruction_string);
+assembly_instruction* assemble_line (simulator *sim, int address, const char *line, int line_number, assembly_instruction *reuse_instruction);
 
 void add_breakpoint (simulator sim, int address);
 void delete_breakpoint (simulator sim, int address);

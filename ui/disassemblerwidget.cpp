@@ -14,21 +14,13 @@ DisassemblerWidget::DisassemblerWidget()
 }
 
 void DisassemblerWidget::DeallocateMemory() {
-    if (lines != 0) {
-        for (int line = 0; line < numLines; line++)
-            free (lines[line]);
-        free (lines);
-    }
-
+    for (int line = 0; line < numLines; line++)
+        free (lines[line]);
     numLines = 0;
-    lines = 0;
 }
 
 void DisassemblerWidget::paintEvent(QPaintEvent *)
 {
-    if (lines == 0)
-        return;
-
     QColor red = QColor(255,180,180);
 
     QPainter p{this};
@@ -60,8 +52,8 @@ void DisassemblerWidget::paintEvent(QPaintEvent *)
         y += 18 * row;
 
         int yForArray = y - wordHeight / 2;
-        wordXPos[i / 4] = x + column1XIncrement;
-        wordYPos[i / 4] = yForArray;
+        wordXPos[line] = x + column1XIncrement;
+        wordYPos[line] = yForArray;
 
         if (compareFlags[line])
             p.fillRect(x + column1XIncrement - 2, y - 11, bytesWidth + 4, 16, red);
@@ -103,8 +95,6 @@ void DisassemblerWidget::refreshDisassembly()
 
     int address = 1000;
     numLines = 0;
-    int arraySize = 10;
-    lines = (char **) malloc(sizeof(char *) * (arraySize + 1));
 
     int num_of_instructions = theMainWindow -> num_of_instructions;
     assembly_instruction **instructions = theMainWindow -> instructions;
@@ -127,10 +117,6 @@ void DisassemblerWidget::refreshDisassembly()
                 sprintf (lines[numLines], "%05d: %02x %02x %02x %02x", address, mem[address + 0], mem[address + 1], mem[address + 2], mem[address + 3]);
                 address += increment;
                 numLines ++;
-                if (numLines + 1 >= arraySize) {
-                    arraySize += 10;
-                    lines = (char **) realloc (lines, sizeof (char *) * (arraySize + 1));
-                }
             }
 
         lines[numLines] = (char *) malloc(sizeof(char) * 150);
@@ -155,10 +141,8 @@ void DisassemblerWidget::refreshDisassembly()
         address += increment;
         numLines ++;
 
-        if (numLines + 1 >= arraySize) {
-            arraySize += 10;
-            lines = (char **) realloc (lines, sizeof (char *) * (arraySize + 1));
-        }
+        if (numLines >= SHOW_MAX_LINES - 1)
+            break;
     }
 
     // set width properly
@@ -167,7 +151,7 @@ void DisassemblerWidget::refreshDisassembly()
 }
 
 void DisassemblerWidget::compareTo(DisassemblerWidget *otherWidget) {
-    for (int i = 0; i < COMPARE_MAX_LINES; i++)
+    for (int i = 0; i < SHOW_MAX_LINES; i++)
         compareFlags[i] = 0;
 
     for (int i = 0; i < numLines; i++) {
