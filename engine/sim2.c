@@ -111,6 +111,20 @@ int do_partial_assembly(simulator2 *sim, int lineNumber, const char* line)
     if (strchr(old_instruction->source_line, ':') != 0 || strchr(line, ':') != 0)
         return 1;
 
+    // if either the prior version, or the new version of the line starts with 'data', fail and do full assembly
+    if (
+            (old_instruction->source_line[0] == 'd' || old_instruction->source_line[0] == 'D') &&
+            (old_instruction->source_line[1] == 'a' || old_instruction->source_line[1] == 'A') &&
+            (old_instruction->source_line[2] == 't' || old_instruction->source_line[2] == 'T') &&
+            (old_instruction->source_line[3] == 'a' || old_instruction->source_line[3] == 'A'))
+        return 1;
+    if (
+            (line[0] == 'd' || line[0] == 'D') &&
+            (line[1] == 'a' || line[1] == 'A') &&
+            (line[2] == 't' || line[2] == 'T') &&
+            (line[3] == 'a' || line[3] == 'A'))
+        return 1;
+
     // save existing 4 bytes
     int existingBytes[4];
     existingBytes[0] = existingBytes[1] = existingBytes[2] = existingBytes[3] = 0;

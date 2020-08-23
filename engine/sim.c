@@ -1164,13 +1164,27 @@ assembly_instruction** assemble (simulator sim, const char *program, int address
 	int pc_initialized = 0;
 	line_number = 1;
 	index = 0;
-	while (1) {
-        if (line_number > 1 && program[index] == 0)
-			break;
+    int done = 0;
+    while (!done) {
+
+        // at the end, add one more empty line record
+        if (program[index] == 0)
+            done = 1;
 
         get_line (line, program, &index, 255);
 
+        int lineAddress = address;
 		int success = process_data_statement (sim, &address, line);
+        if (success) {
+            // add its line in the line table
+            int index = *number_of_instructions;
+            result[index] = malloc (sizeof (assembly_instruction));
+            copy_string_len(result[index]->source_line, line, SOURCE_LINE_MAX);
+            result[index]->address = lineAddress;
+            result[index]->error = 0;
+            result[index]->source_line_number = line_number;
+            (*number_of_instructions) ++;
+        }
 
 		if (!success) {
 
