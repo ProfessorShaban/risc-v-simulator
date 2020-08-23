@@ -447,7 +447,9 @@ void CodeEditor::onTextChanged()
     MainWindow *theMainWindow = (MainWindow*) mainWindow;
     theMainWindow->doBuild();
 
-    if (!partialAssemblySuccessful)
+    // if this is an empty file, theMainWindow->instructions_sim2 == 0 would be false, so initialize
+    // with a full build
+    if (!partialAssemblySuccessful || theMainWindow->instructions_sim2 == 0)
         theMainWindow->doBuildSim2();
 
     partialAssemblySuccessful = 0;

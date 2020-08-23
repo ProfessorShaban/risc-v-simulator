@@ -103,6 +103,10 @@ void DisassemblerWidget::refreshDisassembly()
         instructions = theMainWindow -> instructions_sim2;
     }
 
+    // if not initialized yet, return
+    if (instructions == 0)
+        return;
+
     for (int i = 0; i < num_of_instructions; i++) {
         assembly_instruction *instruction = instructions[i];
 
