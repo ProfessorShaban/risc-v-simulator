@@ -89,32 +89,36 @@ bool CodeEditor::event(QEvent *event)
                 // do partial assembly
 
                 QTextCursor cursor = textCursor();
-                int lineNumber = cursor.blockNumber();
-                MainWindow *theMainWindow = (MainWindow*) mainWindow;
 
-                QTextBlock tb = document() -> findBlockByLineNumber(lineNumber);
-                QString qstr= tb.text();
-                int column = cursor.columnNumber();
-                if (keyEvent->text().length() > 0) {
-                    char newChar = keyEvent->text().at(0).toLatin1();
-                    qstr.insert(column, newChar);
-                    QByteArray ba = qstr.toLocal8Bit();
-                    const char *line = ba.data();
+                // if selection isn't empty, do full assembly
+                if (cursor.selectionStart() == cursor.selectionEnd()) {
+                    int lineNumber = cursor.blockNumber();
+                    MainWindow *theMainWindow = (MainWindow*) mainWindow;
 
-                    if (key == Qt::Key_Return) {
+                    QTextBlock tb = document() -> findBlockByLineNumber(lineNumber);
+                    QString qstr= tb.text();
+                    int column = cursor.columnNumber();
+                    if (keyEvent->text().length() > 0) {
+                        char newChar = keyEvent->text().at(0).toLatin1();
+                        qstr.insert(column, newChar);
+                        QByteArray ba = qstr.toLocal8Bit();
+                        const char *line = ba.data();
 
-                        // if empty new line created
-                        if ((int) strlen(line) == column+1 &&
-                                line[column] == '\r') {
-                            int result = theMainWindow->enterKeyHit(lineNumber + 1);
+                        if (key == Qt::Key_Return) {
+
+                            // if empty new line created
+                            if ((int) strlen(line) == column+1 &&
+                                    line[column] == '\r') {
+                                int result = theMainWindow->enterKeyHit(lineNumber + 1);
+                                if (result == 0)
+                                    partialAssemblySuccessful = 1;
+                            }
+                        }
+                        else {
+                            int result = theMainWindow->doPartialBuildSim2(lineNumber, line);
                             if (result == 0)
                                 partialAssemblySuccessful = 1;
                         }
-                    }
-                    else {
-                        int result = theMainWindow->doPartialBuildSim2(lineNumber, line);
-                        if (result == 0)
-                            partialAssemblySuccessful = 1;
                     }
                 }
             }
