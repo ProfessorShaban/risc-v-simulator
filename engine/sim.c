@@ -1165,7 +1165,7 @@ assembly_instruction** assemble (simulator sim, const char *program, int address
 	line_number = 1;
 	index = 0;
 	while (1) {
-		if (program[index] == 0)
+        if (line_number > 1 && program[index] == 0)
 			break;
 
         get_line (line, program, &index, 255);
