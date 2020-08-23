@@ -75,12 +75,14 @@ bool CodeEditor::event(QEvent *event)
         QKeyEvent *keyEvent = (QKeyEvent *) event;
 
         int key = keyEvent -> key();
+
         if ((key >= 'a' && key <= 'z') ||
                 (key >= 'A' && key <= 'Z') ||
                 (key >= '0' && key <= '9') ||
                 key == ' ' ||
                 key == '-' ||
-                key == ',') {
+                key == ',' ||
+                key == Qt::Key_Return) {
 
             if (! (keyEvent->modifiers() & Qt::ControlModifier)) {
 
@@ -99,9 +101,21 @@ bool CodeEditor::event(QEvent *event)
                     QByteArray ba = qstr.toLocal8Bit();
                     const char *line = ba.data();
 
-                    int result = theMainWindow->doPartialBuildSim2(lineNumber, line);
-                    if (result == 0)
-                        partialAssemblySuccessful = 1;
+                    if (key == Qt::Key_Return) {
+
+                        // if empty new line created
+                        if ((int) strlen(line) == column+1 &&
+                                line[column] == '\r') {
+                            int result = theMainWindow->enterKeyHit(lineNumber + 1);
+                            if (result == 0)
+                                partialAssemblySuccessful = 1;
+                        }
+                    }
+                    else {
+                        int result = theMainWindow->doPartialBuildSim2(lineNumber, line);
+                        if (result == 0)
+                            partialAssemblySuccessful = 1;
+                    }
                 }
             }
         }

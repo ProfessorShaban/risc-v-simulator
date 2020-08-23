@@ -34,6 +34,7 @@ public:
     void doBuild();
     void doBuildSim2();
     int doPartialBuildSim2(int lineNumber, const char *line);
+    int enterKeyHit(int lineNumber);
     void doRun();
     void startRun();
     void doStep();

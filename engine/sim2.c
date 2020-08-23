@@ -4,6 +4,7 @@
 #include <string.h>
 #include "sim2.h"
 #include "internal.h"
+#include "utils.h"
 
 
 simulator2* create_simulator2(OutputString *outputStringCallback, InputString inputStringCallback)
@@ -42,6 +43,40 @@ void get_instruction_string2(simulator2 *sim, int address, char* instruction_str
 }
 
 // returns 0 for success, 1 otherwise
+int enter_key_hit(simulator2 *sim, int lineNumber, assembly_instruction*** instructions, int* num_instructions)
+{
+    // insert an entry into the line table
+    assembly_instruction *instruction = malloc (sizeof (assembly_instruction));
+    instruction -> address = 0;
+    instruction -> source_line[0] = 0;
+    instruction -> source_line_number = lineNumber;
+    instruction -> error = 0;
+    instruction -> error_message = 0;
+    for (int i = sim->num_lines - 1; i >= lineNumber; i--) {
+
+        // move lines down
+        sim->line_table[i+1] = sim->line_table[i];
+
+        // also, adjust line numbers in subsequent line table records
+        sim->line_table[i+1]->source_line_number++;
+    }
+    sim->line_table[lineNumber] = instruction;
+    sim->num_lines++;
+
+    (*num_instructions)++;
+
+    // expand line table if needed
+    if (*num_instructions % 10 == 0) {
+        int newSize = *num_instructions + 10;
+        sim->line_table = realloc (sim->line_table, sizeof (assembly_instruction) * newSize);
+
+        *instructions = sim->line_table;
+    }
+
+    return 0;
+}
+
+// returns 0 for success, 1 otherwise
 int do_partial_assembly(simulator2 *sim, int lineNumber, const char* line)
 {
     // do partial assembly
@@ -76,6 +111,10 @@ int do_partial_assembly(simulator2 *sim, int lineNumber, const char* line)
 
     assembly_instruction *instruction = assemble_line (sim->sim, address, line, lineNumber, old_instruction /* reuse_instruction */);
 
+    // if line isn't empty, and not a proper instruction, consider it an instruction with invalid contents
+    if (instruction != 0 && instruction->address == 0 && !empty_line(line))
+        instruction->address = address;
+
     // if instruction is null, and existing instruction is null, nothing to do except replace existing instruction with new one
     if (instruction != 0 && instruction->address == 0 && oldAddress == 0)
         return 0;
@@ -88,19 +127,38 @@ int do_partial_assembly(simulator2 *sim, int lineNumber, const char* line)
     if (instruction != 0 && instruction->address != 0 && oldAddress == 0) {
         // move all subsequent instructions down by one word
         for (int i = lineNumber + 1; i < sim->num_lines; i++)
-            sim->line_table[i]->address += 4;
+            if (sim->line_table[i]->address != 0)
+                sim->line_table[i]->address += 4;
+
+        int lastAddress = 9999;
+        for (int i = sim->num_lines - 1; i >= 0; i--) {
+            if (sim->line_table[i]->address != 0) {
+                lastAddress = sim->line_table[i]->address + 4;
+                break;
+            }
+        }
 
         // move instructions in memory down by one word
-        for (unsigned long long i = sim->line_table[sim->num_lines-1]->address; i > sim->line_table[lineNumber]->address; i -= 4)
-            for (int j = 0; j < 4; j++)
-                simi->memory[i+j+4] = simi->memory[i+j];
+        if (lastAddress != 9999)
+            for (unsigned long long i = lastAddress; i > sim->line_table[lineNumber]->address + 4; i --) {
+                char byte = simi->memory[i-4];
+                simi->memory[i] = byte;
+            }
+
+        // restore original instruction, to be directly after the new instruction
         for (int j = 0; j < 4; j++)
-            simi->memory[sim->line_table[lineNumber]->address + j + 4] = simi->memory[sim->line_table[lineNumber]->address + j];
+            simi->memory[sim->line_table[lineNumber]->address + 4 + j] = existingBytes[j];
 
         return 0;
     }
 
-// ??? if instruction is null, and existing instruction is not null, shift everything below this line up (line deleted)
+    return 1;
+}
 
+int empty_line(const char* line)
+{
+    for (int i = 0; i < (int) strlen(line); i++)
+        if (line[i] != ' ')
+            return 0;
     return 1;
 }

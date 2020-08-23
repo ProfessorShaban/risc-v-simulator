@@ -395,6 +395,22 @@ int MainWindow::doPartialBuildSim2(int lineNumber, const char *line) {
     return result;
 }
 
+// returns 0 for success, 1 otherwise
+int MainWindow::enterKeyHit(int lineNumber) {
+
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+
+    int result = enter_key_hit (sim2, lineNumber, &instructions_sim2, &num_of_instructions_sim2);
+
+    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+    time_sim2 += std::chrono::duration_cast<std::chrono::nanoseconds> (end - begin).count();
+
+    disassemblerWidget2 -> refreshDisassembly();
+    compareDisassemblies();
+
+    return result;
+}
+
 void MainWindow::compareDisassemblies() {
     disassemblerWidget->compareTo(disassemblerWidget2);
     disassemblerWidget2->compareTo(disassemblerWidget);
