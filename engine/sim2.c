@@ -76,6 +76,14 @@ int enter_key_hit(simulator2 *sim, int lineNumber, assembly_instruction*** instr
     return 0;
 }
 
+int empty_line(const char* line)
+{
+    for (int i = 0; i < (int) strlen(line); i++)
+        if (line[i] != ' ')
+            return 0;
+    return 1;
+}
+
 // returns 0 for success, 1 otherwise
 int do_partial_assembly(simulator2 *sim, int lineNumber, const char* line)
 {
@@ -87,6 +95,7 @@ int do_partial_assembly(simulator2 *sim, int lineNumber, const char* line)
 
     assembly_instruction *old_instruction = sim->line_table[lineNumber];
     int oldAddress = old_instruction->address;
+    int oldInstructionError = old_instruction->error;
     simulator_internal *simi = (simulator_internal *) sim->sim;
 
     // find starting address for this line, if its address is 0. Work backward and find the previous line with a valid address, then add one word
@@ -112,15 +121,15 @@ int do_partial_assembly(simulator2 *sim, int lineNumber, const char* line)
     assembly_instruction *instruction = assemble_line (sim->sim, address, line, lineNumber, old_instruction /* reuse_instruction */);
 
     // if line isn't empty, and not a proper instruction, consider it an instruction with invalid contents
-    if (instruction != 0 && instruction->address == 0 && !empty_line(line))
+    if (instruction != 0 && instruction->error && !empty_line(line))
         instruction->address = address;
 
-    // if instruction is null, and existing instruction is null, nothing to do except replace existing instruction with new one
-    if (instruction != 0 && instruction->address == 0 && oldAddress == 0)
+    // if instruction is invalid, and existing instruction is invalid, nothing to do except replace existing instruction with new one
+    if (instruction != 0 && instruction->error && oldInstructionError)
         return 0;
 
     // if instruction is not null, and existing instruction is not null, replace existing instruction with new instruction
-    if (instruction != 0 && instruction->address != 0 && oldAddress != 0)
+    if (instruction != 0 && !instruction->error && oldAddress != 0)
         return 0;
 
     // if instruction is not null, and existing instruction is null, shift everything below this line down (line inserted)
@@ -152,13 +161,5 @@ int do_partial_assembly(simulator2 *sim, int lineNumber, const char* line)
         return 0;
     }
 
-    return 1;
-}
-
-int empty_line(const char* line)
-{
-    for (int i = 0; i < (int) strlen(line); i++)
-        if (line[i] != ' ')
-            return 0;
     return 1;
 }
