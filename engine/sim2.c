@@ -103,6 +103,7 @@ int enter_key_hit(simulator2 *sim, int lineNumber, assembly_instruction*** instr
     // insert an entry into the line table
     assembly_instruction *instruction = malloc (sizeof (assembly_instruction));
     instruction -> address = 0;
+    instruction -> length = 4;
     instruction -> source_line[0] = 0;
     instruction -> source_line_number = lineNumber;
     instruction -> error = 0;
@@ -160,7 +161,7 @@ int do_partial_assembly(simulator2 *sim, int lineNumber, char* line)
     int address = 1000;
     for (int i = lineNumber - 1; i >= 0; i--) {
         if (sim->line_table[i]->address > 0) {
-            address = sim->line_table[i]->address + 4;
+            address = sim->line_table[i]->address + sim->line_table[i]->length;
             break;
         }
     }

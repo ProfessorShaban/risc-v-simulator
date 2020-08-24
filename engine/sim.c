@@ -831,6 +831,7 @@ void translate_pseudoinstruction(char *token, char *line, int *index)
 
         int temp_index = *index;
         assembly_instruction *instruction = malloc (sizeof (assembly_instruction));
+        instruction -> length = 4;
 
         if (get_register (line, &temp_index, instruction, &(instruction -> rd), "unrecognized rd")) return;
         if (get_comma (line, &temp_index, instruction)) return;
@@ -871,7 +872,7 @@ assembly_instruction* assemble_line (simulator *sim, int address, char *line, in
     translate_pseudoinstruction (token, line, &index);
 
     assembly_instruction *instruction = reuse_instruction != 0 ? reuse_instruction : malloc (sizeof (assembly_instruction));
-
+    instruction -> length = 4;
     instruction -> address = address;
     simi->memory[address+0] = simi->memory[address+1] = simi->memory[address+2] = simi->memory[address+3] = 0xff;
     copy_string_len(instruction -> source_line, line, SOURCE_LINE_MAX);
@@ -1179,6 +1180,7 @@ assembly_instruction** assemble (simulator sim, const char *program, int address
             // add its line in the line table
             int index = *number_of_instructions;
             result[index] = malloc (sizeof (assembly_instruction));
+            result[index] -> length = address - lineAddress;
             copy_string_len(result[index]->source_line, line, SOURCE_LINE_MAX);
             result[index]->address = lineAddress;
             result[index]->error = 0;
@@ -1194,6 +1196,7 @@ assembly_instruction** assemble (simulator sim, const char *program, int address
             if (instruction == 0) {
                 int index = *number_of_instructions;
                 result[index] = malloc (sizeof (assembly_instruction));
+                result[index] -> length = 4;
                 copy_string_len(result[index]->source_line, line, SOURCE_LINE_MAX);
                 result[index]->address = 0;
                 result[index]->error = 0;
@@ -1366,7 +1369,8 @@ assembly_instruction* get_instruction (simulator sim, unsigned long long address
     format = instruction_format -> format;
 
 	assembly_instruction *instruction = malloc (sizeof (assembly_instruction));
-	instruction -> opcode = opcode;
+    instruction -> length = 4;
+    instruction -> opcode = opcode;
 	instruction -> rd = rd;
 	instruction -> rs1 = rs1;
 	instruction -> imm31 = imm31;

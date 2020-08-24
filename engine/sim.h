@@ -26,6 +26,7 @@ typedef struct {
 	int error;			// 1 in case of error, 0 otherwise
 	char *error_message;
 	unsigned long long address;
+    int length;         // 4 by default, but can vary for data statements
     char source_line[SOURCE_LINE_MAX+1];
 	char *mnemonic;
 	char format;
