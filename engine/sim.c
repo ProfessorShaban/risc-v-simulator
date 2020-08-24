@@ -1162,7 +1162,7 @@ assembly_instruction** assemble (simulator sim, const char *program, int address
 	assembly_instruction **result = malloc (sizeof (assembly_instruction *) * (*number_of_instructions + 10));
 
 	int pc_initialized = 0;
-	line_number = 1;
+    line_number = 0;
 	index = 0;
     int done = 0;
     while (!done) {

@@ -271,7 +271,7 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
 
     while (block.isValid() && top <= event->rect().bottom()) {
         if (block.isVisible() && bottom >= event->rect().top()) {
-            int lineNumber = blockNumber + 1;
+            int lineNumber = blockNumber;
             bool error = false;
             int address = lineNumberToAddress(lineNumber, &error);
             QString number = "";
