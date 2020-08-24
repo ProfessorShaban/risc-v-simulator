@@ -102,7 +102,9 @@ bool CodeEditor::event(QEvent *event)
                         char newChar = keyEvent->text().at(0).toLatin1();
                         qstr.insert(column, newChar);
                         QByteArray ba = qstr.toLocal8Bit();
-                        const char *line = ba.data();
+                        const char *baLine = ba.data();
+                        char line[256];
+                        copy_string_len(line, baLine, 255);
 
                         if (key == Qt::Key_Return) {
 

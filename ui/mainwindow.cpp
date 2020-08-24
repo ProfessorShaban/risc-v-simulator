@@ -380,7 +380,7 @@ void MainWindow::doBuildSim2()
 }
 
 // returns 0 for success, 1 otherwise
-int MainWindow::doPartialBuildSim2(int lineNumber, const char *line) {
+int MainWindow::doPartialBuildSim2(int lineNumber, char *line) {
 
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 

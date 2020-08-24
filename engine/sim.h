@@ -54,7 +54,7 @@ extern "C" void do_step(simulator sim, char **error_message, delta *deltas, int 
 extern "C" int is_stopped(simulator sim);
 extern "C" void reset_stop(simulator sim);
 extern "C" void get_instruction_string(simulator sim, int address, char *instruction_string);
-extern "C" assembly_instruction* assemble_line (simulator *sim, int address, const char *line, int line_number, assembly_instruction *reuse_instruction);
+extern "C" assembly_instruction* assemble_line (simulator *sim, int address, char *line, int line_number, assembly_instruction *reuse_instruction);
 
 extern "C" void add_breakpoint (simulator sim, int address);
 extern "C" void delete_breakpoint (simulator sim, int address);
@@ -80,7 +80,7 @@ void do_step(simulator sim, char **error_message, delta *deltas, int num_deltas,
 int is_stopped(simulator sim);
 void reset_stop(simulator sim);
 void get_instruction_string(simulator sim, int address, char *instruction_string);
-assembly_instruction* assemble_line (simulator *sim, int address, const char *line, int line_number, assembly_instruction *reuse_instruction);
+assembly_instruction* assemble_line (simulator *sim, int address, char *line, int line_number, assembly_instruction *reuse_instruction);
 
 void add_breakpoint (simulator sim, int address);
 void delete_breakpoint (simulator sim, int address);

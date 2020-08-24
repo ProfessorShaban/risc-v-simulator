@@ -48,19 +48,20 @@ void increment_symbol_table_data(simulator2 *sim, int lineNumber, int adjustLine
     label *aLabel = simi->labels;
     while (aLabel != 0) {
 
-        if (adjustLineNumbers && aLabel->line_number >= lineNumber)
+        if (adjustLineNumbers == 1 && aLabel->line_number >= lineNumber)
             aLabel->line_number++;
 
-        if (adjustAddresses && (int) aLabel->address >= address)
+        if (adjustAddresses == 1 && ((int) aLabel->address >= address))
             aLabel->address += 4;
 
         label_reference *aLabelReference = aLabel->references;
         while (aLabelReference != 0) {
 
-            if (adjustLineNumbers && aLabelReference->line_number >= lineNumber)
+            if (adjustLineNumbers == 1 && aLabelReference->line_number >= lineNumber)
                 aLabelReference->line_number++;
 
-            if (adjustAddresses && (int) aLabelReference->address >= address)
+            // compare-to address for references is 4 bytes earlier
+            if (adjustAddresses == 1 && ((int) aLabelReference->address >= address - 4))
                 aLabelReference->address += 4;
 
             aLabelReference = aLabelReference->next;
@@ -79,8 +80,8 @@ void adjust_relative_addresses(simulator2 *sim, int address) {
         while (aLabelReference != 0) {
 
             // if the symbol and its reference cross the changed address, re-assemble the line containing the reference
-            if (((int) aLabel->address < address && (int) aLabelReference->address > address) ||
-                    ((int) aLabel->address > address && (int) aLabelReference->address < address)) {
+            if (((int) aLabel->address <= address && (int) aLabelReference->address > address) ||
+                    ((int) aLabel->address > address && (int) aLabelReference->address <= address)) {
 
                 assemble_line (sim->sim,
                                aLabelReference->address,
@@ -142,7 +143,7 @@ int empty_line(const char* line)
 }
 
 // returns 0 for success, 1 otherwise
-int do_partial_assembly(simulator2 *sim, int lineNumber, const char* line)
+int do_partial_assembly(simulator2 *sim, int lineNumber, char* line)
 {
     // do partial assembly
 
@@ -230,7 +231,7 @@ int do_partial_assembly(simulator2 *sim, int lineNumber, const char* line)
             simi->memory[sim->line_table[lineNumber]->address + 4 + j] = existingBytes[j];
 
         // adjust symbol table
-        increment_symbol_table_data(sim, 0 /* lineNumber */, 0 /* incrementLineNumbers */, instruction->address /* address */, 1 /* adjustAddresses */);
+        increment_symbol_table_data(sim, 0 /* lineNumber */, 0 /* incrementLineNumbers */, instruction->address + 4 /* address */, 1 /* adjustAddresses */);
 
         // adjust relative addresses
         adjust_relative_addresses(sim, instruction->address);

@@ -776,12 +776,12 @@ void translate_pseudoinstruction(char *token, char *line, int *index)
 		copy_string (new_line, line);
 		*index = *index - 1;	// back up to 'j' start
 		new_line [*index] = 0;
-		append_string (new_line, (const char *) "beq x0, x0, ");
+        append_string (new_line, (const char *) "beq x0, x0, ");
 		append_string (new_line, line + *index + 1);
-		copy_string (token, "beq");
-		*index += 3;	// 3 = strlen("beq")
-		copy_string (line, new_line);
-	}
+        copy_string (token, "beq");
+        *index += 3;	// 3 = strlen("beq")
+        copy_string (line, new_line);
+    }
 
 	// mv
 	if (stricmp(token, "mv") == 0) {
@@ -843,10 +843,10 @@ void translate_pseudoinstruction(char *token, char *line, int *index)
         char new_line [128];
         sprintf(new_line, "%s x%d, x%d, %d", token, instruction->rd, instruction->rs1, imm);
         copy_string(line, new_line);
-        }
+    }
 }
 
-assembly_instruction* assemble_line (simulator *sim, int address, const char *line, int line_number, assembly_instruction *reuse_instruction)
+assembly_instruction* assemble_line (simulator *sim, int address, char *line, int line_number, assembly_instruction *reuse_instruction)
 {
 	simulator_internal *simi = (simulator_internal *) sim;
 
@@ -868,7 +868,7 @@ assembly_instruction* assemble_line (simulator *sim, int address, const char *li
             return 0;
     }
 
-	translate_pseudoinstruction (token, line, &index);
+    translate_pseudoinstruction (token, line, &index);
 
     assembly_instruction *instruction = reuse_instruction != 0 ? reuse_instruction : malloc (sizeof (assembly_instruction));
 
@@ -1106,7 +1106,7 @@ assembly_instruction** assemble (simulator sim, const char *program, int address
 	simi -> labels = 0;
 	clear_breakpoints(sim);
 
-	int line_number = 1;
+    int line_number = 0;
 	int index = 0;
 	char line[256];
 	int preprocess_address = address;
