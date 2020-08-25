@@ -69,7 +69,8 @@ bool CodeEditor::event(QEvent *event)
         }
     }
 
-    if (event->type() == QEvent::KeyPress) {
+    MainWindow *theMainWindow = (MainWindow*) mainWindow;
+    if (event->type() == QEvent::KeyPress && theMainWindow != 0 && theMainWindow -> partialDisassemblyMode) {
         partialAssemblySuccessful = 0;
 
         QKeyEvent *keyEvent = (QKeyEvent *) event;
@@ -93,7 +94,6 @@ bool CodeEditor::event(QEvent *event)
                 // if selection isn't empty, do full assembly
                 if (cursor.selectionStart() == cursor.selectionEnd()) {
                     int lineNumber = cursor.blockNumber();
-                    MainWindow *theMainWindow = (MainWindow*) mainWindow;
 
                     QTextBlock tb = document() -> findBlockByLineNumber(lineNumber);
                     QString qstr= tb.text();
@@ -138,7 +138,7 @@ int CodeEditor::lineNumberFromY(int y)
     int bottom = top + (int) blockBoundingRect(block).height();
     while (block.isValid()) {
         if (block.isVisible()) {
-            int lineNumber = blockNumber + 1;
+            int lineNumber = blockNumber;
             if (y >= top && y <= bottom)
                 return lineNumber;
         }
@@ -346,7 +346,7 @@ int CodeEditor::lineNumberFromPos(const QPoint &pos)
     int bottom = top + (int) blockBoundingRect(block).height();
     while (block.isValid()) {
         if (block.isVisible()) {
-            int lineNumber = blockNumber + 1;
+            int lineNumber = blockNumber;
             if (posY >= top && posY <= top + (int) blockBoundingRect(block).height())
                 return lineNumber;
         }
@@ -449,10 +449,12 @@ void CodeEditor::onTextChanged()
     MainWindow *theMainWindow = (MainWindow*) mainWindow;
     theMainWindow->doBuild();
 
-    // if this is an empty file, theMainWindow->instructions_sim2 == 0 would be false, so initialize
-    // with a full build
-    if (!partialAssemblySuccessful || theMainWindow->instructions_sim2 == 0)
-        theMainWindow->doBuildSim2();
+    if (theMainWindow -> partialDisassemblyMode) {
+        // if this is an empty file, theMainWindow->instructions_sim2 == 0 would be false, so initialize
+        // with a full build
+        if (!partialAssemblySuccessful || theMainWindow->instructions_sim2 == 0)
+            theMainWindow->doBuildSim2();
+    }
 
     partialAssemblySuccessful = 0;
 }

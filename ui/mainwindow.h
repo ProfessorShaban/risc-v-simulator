@@ -48,6 +48,7 @@ public:
     void readLine(char *line);
     void doUpdateDisplay();
     void ensurePCVisible();
+    void toggleDisassemblyMode();
 
 private:
     Ui::MainWindow *ui;
@@ -68,6 +69,7 @@ private:
     bool animating = false;
     int animateMilliseconds = 200;
     int fontSize = 12;
+    QAction *togglePartialAssemblyModeAction;
 
 protected:
     void closeEvent(QCloseEvent *event) override;
@@ -123,6 +125,7 @@ public:
     delta deltas[100];
     int num_deltas = 100;
     int deltas_used = 0;
+    bool partialDisassemblyMode;
 };
 
 #endif // MAINWINDOW_H

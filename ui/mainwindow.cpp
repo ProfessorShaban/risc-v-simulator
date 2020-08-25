@@ -37,6 +37,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->setupUi(this);
 
+    partialDisassemblyMode = false;
+    ui->dockWidgetDisassembler2->hide();
+
     createActions();
     createStatusBar();
     readSettings();
@@ -244,6 +247,22 @@ void MainWindow::showRegistersHex()
     registerWidget->repaint();
 }
 
+void MainWindow::toggleDisassemblyMode()
+{
+    partialDisassemblyMode = !partialDisassemblyMode;
+
+    // turn disassembly 2 widget on/off
+    if (partialDisassemblyMode)
+        ui->dockWidgetDisassembler2->show();
+    else
+        ui->dockWidgetDisassembler2->hide();
+
+    togglePartialAssemblyModeAction->setChecked(partialDisassemblyMode);
+
+    // reassemble
+    doBuild();
+}
+
 MainWindow::~MainWindow()
 {
     if (animating)
@@ -412,8 +431,10 @@ int MainWindow::enterKeyHit(int lineNumber) {
 }
 
 void MainWindow::compareDisassemblies() {
-    disassemblerWidget->compareTo(disassemblerWidget2);
-    disassemblerWidget2->compareTo(disassemblerWidget);
+    if (partialDisassemblyMode) {
+        disassemblerWidget->compareTo(disassemblerWidget2);
+        disassemblerWidget2->compareTo(disassemblerWidget);
+    }
 }
 
 void MainWindow::doRun()
@@ -527,6 +548,12 @@ void MainWindow::createActions()
 
     QAction *resetTimersAct = fileMenu->addAction(tr("Reset Timers"), this, &MainWindow::resetTimers);
     resetTimersAct->setStatusTip(tr("Reset the timers"));
+
+    fileMenu->addSeparator();
+
+    togglePartialAssemblyModeAction = fileMenu->addAction(tr("Partial Assembly Mode (experimental)"), this, &MainWindow::toggleDisassemblyMode);
+    togglePartialAssemblyModeAction->setStatusTip(tr("Toggle Partial Assembly Mode (experimental)"));
+    togglePartialAssemblyModeAction->setCheckable(true);
 
     fileMenu->addSeparator();
 
