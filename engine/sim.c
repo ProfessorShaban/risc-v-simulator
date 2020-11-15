@@ -851,7 +851,7 @@ assembly_instruction* assemble_line (simulator *sim, int address, char *line, in
 {
 	simulator_internal *simi = (simulator_internal *) sim;
 
-	char token[128];
+    char token[128];
 	int index = 0;
 	get_token (line, &index, token);
     if (token[0] == 0) 	// empty line
@@ -943,7 +943,7 @@ assembly_instruction* assemble_line (simulator *sim, int address, char *line, in
 	simi -> memory[address+2] = (inst >> 16) & 0xff;
 	simi -> memory[address+3] = (inst >> 24) & 0xff;
 
-	return instruction;
+    return instruction;
 }
 
 int process_data_statement (simulator *sim, int *address, char *line)

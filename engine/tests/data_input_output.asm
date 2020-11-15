@@ -12,11 +12,13 @@ user_input:
 data "                                                                                "
 
 user_input_int:
-data 1234
+data -1234
 
 powers_of_2:
 data 1, 2, 4, 8, 16
 
+
+data 3.14159265
 
 // get string input
 auipc x20, name_prompt

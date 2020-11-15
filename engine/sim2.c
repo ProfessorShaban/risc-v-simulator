@@ -11,6 +11,8 @@ simulator2* create_simulator2(OutputString *outputStringCallback, InputString in
 {
     simulator2 *sim = malloc(sizeof (simulator2));
     sim->sim = create_simulator(outputStringCallback, inputStringCallback);
+    sim->line_table = 0;
+    sim->num_lines = 0;
     return sim;
 }
 
@@ -116,17 +118,38 @@ int enter_key_hit(simulator2 *sim, int lineNumber, assembly_instruction*** instr
         // also, adjust line numbers in subsequent line table records
         sim->line_table[i+1]->source_line_number++;
     }
+
+    // expand line table if needed
+    if (*num_instructions % 10 == 0) {
+        int newSize = *num_instructions + 10;
+        if (sim->line_table == 0) {
+            int newSizeInBytes = sizeof (assembly_instruction *) * newSize;
+            temp1 = malloc(newSizeInBytes);
+            assembly_instruction ** newTable = temp1;
+            sim->line_table = newTable;
+        }
+        else
+            sim->line_table = realloc (sim->line_table, sizeof (assembly_instruction) * newSize);
+
+        *instructions = sim->line_table;
+    }
+
     sim->line_table[lineNumber] = instruction;
     sim->num_lines++;
 
     (*num_instructions)++;
 
-    // expand line table if needed
-    if (*num_instructions % 10 == 0) {
-        int newSize = *num_instructions + 10;
-        sim->line_table = realloc (sim->line_table, sizeof (assembly_instruction) * newSize);
+    // if we're at the start of the file, it's possible the first entry the line table is empty, so fix it
+    if (sim->line_table[0] == 0) {
+        assembly_instruction *instruction = malloc (sizeof (assembly_instruction));
+        instruction -> address = 4;
+        instruction -> length = 0;
+        instruction -> source_line[0] = 0;
+        instruction -> source_line_number = 0;
+        instruction -> error = 0;
+        instruction -> error_message = 0;
 
-        *instructions = sim->line_table;
+        sim->line_table[0] = instruction;
     }
 
     // adjust symbol table

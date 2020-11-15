@@ -110,8 +110,6 @@ DISTFILES += \
     engine/tests/shift.asm \
     engine/tests/demo.asm
 
-CONFIG     += debug
-
 CONFIG += static
 # QMAKE_LFLAGS += -static-libgcc -static-libstdc++
 QMAKE_LFLAGS += -static-libstdc++
