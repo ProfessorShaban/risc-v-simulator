@@ -124,8 +124,7 @@ int enter_key_hit(simulator2 *sim, int lineNumber, assembly_instruction*** instr
         int newSize = *num_instructions + 10;
         if (sim->line_table == 0) {
             int newSizeInBytes = sizeof (assembly_instruction *) * newSize;
-            temp1 = malloc(newSizeInBytes);
-            assembly_instruction ** newTable = temp1;
+            assembly_instruction ** newTable = malloc(newSizeInBytes);;
             sim->line_table = newTable;
         }
         else
