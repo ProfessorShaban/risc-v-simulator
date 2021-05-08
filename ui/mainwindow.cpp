@@ -46,7 +46,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->codeEditor->document(), &QTextDocument::contentsChanged, this, &MainWindow::documentWasModified);
 
 #ifndef QT_NO_SESSIONMANAGER
-    QGuiApplication::setFallbackSessionManagementEnabled(false);
+    // Got a compile error here after udpating Qt
+    // QGuiApplication::setFallbackSessionManagementEnabled(false);
     connect(qApp, &QGuiApplication::commitDataRequest, this, &MainWindow::commitData);
 #endif
 
@@ -717,14 +718,8 @@ void MainWindow::readSettings()
 {
     QSettings settings(QCoreApplication::organizationName(), QCoreApplication::applicationName());
     const QByteArray geometry = settings.value("geometry", QByteArray()).toByteArray();
-    if (geometry.isEmpty()) {
-        const QRect availableGeometry = QApplication::desktop()->availableGeometry(this);
-        resize(availableGeometry.width() / 3, availableGeometry.height() / 2);
-        move((availableGeometry.width() - width()) / 2,
-             (availableGeometry.height() - height()) / 2);
-    } else {
+    if (!geometry.isEmpty())
         restoreGeometry(geometry);
-    }
 }
 
 void MainWindow::writeSettings()
