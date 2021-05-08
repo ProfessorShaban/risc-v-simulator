@@ -1,3 +1,4 @@
 build-RISCV-*
 ui/ui_*.h
+ui/RISCV.pro.user.*
 
