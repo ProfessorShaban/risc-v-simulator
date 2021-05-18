@@ -251,7 +251,7 @@ simulator create_simulator(OutputString *outputStringCallback, InputString input
 
 	simulator_internal *sim = malloc(sizeof (simulator_internal));
 	sim -> memory = malloc(MEMSIZE);
-	sim -> reg = malloc (sizeof (long long int) * 32);
+    sim -> reg = malloc (sizeof (unsigned long long) * 32);
     sim -> freg = malloc (sizeof (double) * 32);
 	sim -> outputStringCallback = outputStringCallback;
 	sim -> inputStringCallback = inputStringCallback;
@@ -386,11 +386,14 @@ void get_token (const char *line, int *index, char *token)
 
 	// copy characters until end of line or end of token
 	int token_index = 0;
-	while (line[*index] != ' ' && line[*index] != '\t' && line[*index] != 0 &&
-            line[*index] != ',' &&
-            line[*index] != '(' &&
-            line[*index] != ')' &&
-            line[*index] != '/' && line[*index] != ':') {
+    while (line[*index] != ' ' &&
+           line[*index] != '\t' &&
+           line[*index] != 0 &&
+           line[*index] != ',' &&
+           line[*index] != '(' &&
+           line[*index] != ')' &&
+           line[*index] != '/' &&
+           line[*index] != ':') {
 		token[token_index++] = line[(*index)++];
 	}
 	token[token_index] = 0;
@@ -509,7 +512,7 @@ int get_register (char *line, int *index, assembly_instruction *instruction, uns
 }
 
 // 0 for success, 1 for failure
-int get_immediate (char *line, int *index, assembly_instruction *instruction, unsigned int *imm, char *error_message)
+int get_immediate (char *line, int *index, assembly_instruction *instruction, int *imm, char *error_message)
 {
     char token[128];
     get_token(line, index, token);
@@ -525,8 +528,7 @@ int get_immediate (char *line, int *index, assembly_instruction *instruction, un
 }
 
 // 0 for success, 1 for failure
-int get_immediate_or_offset (char *line, int *index, assembly_instruction *instruction, unsigned int *imm,
-    char *error_message, int address, simulator_internal *simi)
+int get_immediate_or_offset (char *line, int *index, assembly_instruction *instruction, int *imm, char *error_message, int address, simulator_internal *simi)
 {
     char token[128];
     get_token(line, index, token);
@@ -651,7 +653,7 @@ int build_instruction_x (assembly_instruction *instruction, char *line, int inde
     if (get_comma (line, &index, instruction)) return 1;
     if (get_register (line, &index, instruction, &(instruction -> rs1), "unrecognized rs1")) return 1;
     if (get_comma (line, &index, instruction)) return 1;
-    if (get_immediate (line, &index, instruction, &(instruction -> rs2), "unrecognized immediate")) return 1;
+    if (get_immediate (line, &index, instruction, (int *) &(instruction -> rs2), "unrecognized immediate")) return 1;
 
     instruction -> instruction =
 		instruction -> funct7 << 25 |
@@ -671,7 +673,7 @@ int build_instruction_s (assembly_instruction *instruction, char *line, int inde
     if (get_comma (line, &index, instruction)) return 1;
     if (get_register (line, &index, instruction, &(instruction -> rs2), "unrecognized rs2")) return 1;
     if (get_comma (line, &index, instruction)) return 1;
-    unsigned int imm = 0;
+    int imm = 0;
     if (get_immediate (line, &index, instruction, &imm, "unrecognized immediate")) return 1;
     instruction -> imm31 = imm >> 5;
     instruction -> imm11 = imm & 0x1f;
@@ -694,7 +696,7 @@ int build_instruction_sb (assembly_instruction *instruction, char *line, int ind
     if (get_comma (line, &index, instruction)) return 1;
     if (get_register (line, &index, instruction, &(instruction -> rs2), "unrecognized rs2")) return 1;
     if (get_comma (line, &index, instruction)) return 1;
-    unsigned int imm = 0;
+    int imm = 0;
     if (get_immediate_or_offset (line, &index, instruction, &imm, "unrecognized immediate", address, simi)) return 1;
 
 	unsigned int bit11 = (imm & 0x400) >> 10;
@@ -735,7 +737,7 @@ int build_instruction_uj (assembly_instruction *instruction, char *line, int ind
 {
     if (get_register (line, &index, instruction, &(instruction -> rd), "unrecognized rd")) return 1;
     if (get_comma (line, &index, instruction)) return 1;
-	unsigned int imm = 0;
+    int imm = 0;
 	if (get_immediate_or_offset (line, &index, instruction, &imm, "unrecognized immediate", address, simi)) return 1;
 
 	unsigned int bits1to10 = (imm & 0x3ff);
@@ -835,7 +837,7 @@ void translate_pseudoinstruction(char *token, char *line, int *index)
 
         if (get_register (line, &temp_index, instruction, &(instruction -> rd), "unrecognized rd")) return;
         if (get_comma (line, &temp_index, instruction)) return;
-        unsigned int imm = 0;
+        int imm = 0;
         if (get_immediate (line, &temp_index, instruction, &imm, "unrecognized immediate")) return;
         if (get_certain_token(line, &temp_index, instruction, "(")) return;
         if (get_register (line, &temp_index, instruction, &(instruction -> rs1), "unrecognized rs1")) return;
@@ -933,8 +935,10 @@ assembly_instruction* assemble_line (simulator *sim, int address, char *line, in
             return instruction;
     }
 
-    if (error_occurred)
-        return instruction; // instruction contains error message
+    if (error_occurred) {
+        // instruction contains error message
+        return instruction;
+    }
 
 	// put instruction in memory (little endian)
 	unsigned int inst = instruction -> instruction;
@@ -1282,6 +1286,24 @@ instruction_format* find_instruction_format_by_opcode(int opcode, int funct3, in
     return 0;
 }
 
+instruction_format* get_instruction_format_from_instruction_internal (int opcode, int funct3, int funct7) {
+
+    instruction_format *format = 0;
+
+    // if it's a floating point instruction, we can't use binary search, since in some cases, funct3 is ignored
+    // and funct7 is checked, so we can't sort by opcode then funct3 then funct7
+    if (opcode != 0x53 && opcode != 0x07 && opcode != 0x27)
+        return find_instruction_format_by_opcode(opcode, funct3, funct7); // binary search of instructions, sorted by opcode/funct3/funct7
+
+    for (int i = 0; i < NUM_INSTRUCTIONS; i++)
+        if (instruction_formats[i].opcode == opcode &&
+                (!instruction_formats[i].check_funct3 || (instruction_formats[i].check_funct3 && instruction_formats[i].funct3 == funct3)) &&
+                (!instruction_formats[i].check_funct7 || (instruction_formats[i].check_funct7 && instruction_formats[i].funct7 == funct7)))
+            return &instruction_formats[i];
+
+    return 0;
+}
+
 instruction_format* get_instruction_format_from_instruction (unsigned int mem, int opcode, int funct3,
     int funct7, int *imm31, int *imm11, int *rd, int *rs1, int *rs2)
 {
@@ -1291,23 +1313,7 @@ instruction_format* get_instruction_format_from_instruction (unsigned int mem, i
     *rs1 = 0;
     *rs2 = 0;
 
-    instruction_format *format = 0;
-
-    // if it's a floating point instruction, we can't use binary search, since in some cases, funct3 is ignored
-    // and funct7 is checked, so we can't sort by opcode then funct3 then funct7
-    if (opcode >= INSTRUCTION_FMV_H_X && opcode <= INSTRUCTION_FLE_D) {
-        for (int i = 0; i < NUM_INSTRUCTIONS; i++)
-            if (instruction_formats[i].opcode == opcode &&
-                    (!instruction_formats[i].check_funct3 || (instruction_formats[i].check_funct3 && instruction_formats[i].funct3 == funct3)) &&
-                    (!instruction_formats[i].check_funct7 || (instruction_formats[i].check_funct7 && instruction_formats[i].funct7 == funct7))) {
-                format = &instruction_formats[i];
-                break;
-            }
-    }
-    else
-        // binary search of instructions, sorted by opcode/funct3/funct7
-        format = find_instruction_format_by_opcode(opcode, funct3, funct7);
-
+    instruction_format *format = get_instruction_format_from_instruction_internal(opcode, funct3, funct7);
     if (!format)
         return 0;
 
@@ -1637,7 +1643,7 @@ void get_instruction_string(simulator sim, int address, char* instruction_string
     }
 
     // get instruction format
-    instruction_format *format = find_instruction_format_by_opcode(instruction->opcode, instruction->funct3, instruction->funct7);
+    instruction_format *format = get_instruction_format_from_instruction_internal(instruction->opcode, instruction->funct3, instruction->funct7);
     if (format == 0) {
         copy_string (instruction_string, "(invalid instruction)");
         return;

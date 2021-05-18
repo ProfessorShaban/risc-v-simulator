@@ -253,7 +253,7 @@ void execute_compare (simulator_internal *simi, assembly_instruction *instructio
 	if (operation == INSTRUCTION_SLTU)
 		simi -> reg[instruction -> rd] = simi -> reg[instruction -> rs1] < simi -> reg[instruction -> rs2] ? 1 : 0;
 	if (operation == INSTRUCTION_SLTIU)
-		simi -> reg[instruction -> rd] = simi -> reg[instruction -> rs1] < instruction -> imm31 ? 1 : 0;
+        simi -> reg[instruction -> rd] = simi -> reg[instruction -> rs1] < (unsigned long long) instruction -> imm31 ? 1 : 0;
 
 	if (*deltas_used < num_deltas - 1) {
 		deltas[*deltas_used].type = register_delta;

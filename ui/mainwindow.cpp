@@ -630,7 +630,7 @@ void MainWindow::createActions()
 
     const QIcon *runIcon = new QIcon(":/images/run.png");
     QAction *runAct = new QAction(*runIcon, tr("&Run"), this);
-    runAct->setShortcut(Qt::CTRL + Qt::Key_R);
+    runAct->setShortcut(Qt::CTRL | Qt::Key_R);
     runAct->setStatusTip(tr("Run"));
     connect(runAct, &QAction::triggered, this, &MainWindow::doRun);
     runMenu->addAction(runAct);
@@ -638,7 +638,7 @@ void MainWindow::createActions()
 
     const QIcon *stepIcon = new QIcon(":/images/step.png");
     QAction *stepAct = new QAction(*stepIcon, tr("&Step"), this);
-    stepAct->setShortcut(Qt::CTRL + Qt::Key_T);
+    stepAct->setShortcut(Qt::CTRL | Qt::Key_T);
     stepAct->setStatusTip(tr("Step"));
     connect(stepAct, &QAction::triggered, this, &MainWindow::doStep);
     runMenu->addAction(stepAct);
@@ -646,7 +646,7 @@ void MainWindow::createActions()
 
     const QIcon *animateIcon = new QIcon(":/images/animate.png");
     animateAct = new QAction(*animateIcon, tr("Start &Animation"), this);
-    animateAct->setShortcut(Qt::CTRL + Qt::Key_M);
+    animateAct->setShortcut(Qt::CTRL | Qt::Key_M);
     animateAct->setStatusTip(tr("Animate"));
     connect(animateAct, &QAction::triggered, this, &MainWindow::doAnimate);
     runMenu->addAction(animateAct);

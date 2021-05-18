@@ -51,10 +51,10 @@ add x29, x1, x28
 add x30, x1, x29
 add x31, x1, x30
 
-addi x21, x0, 2018
+addi x21, x0, 2016
 addi x7, x0, 20
 repeat:
-sd x20, 0(x21)     // store doubleword at 2000
+sd x20, 0(x21)     // store doubleword
 addi x21, x21, 8
 addi x7, x7, -1
 bne x7, x0, repeat

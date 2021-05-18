@@ -34,3 +34,5 @@ jalr x0, x1, 0​
 end:
 
 add x1, x0, x0
+
+stop
