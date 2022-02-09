@@ -495,7 +495,7 @@ int get_register (char *line, int *index, assembly_instruction *instruction, uns
 {
     char token[128];
     get_token(line, index, token);
-    if (token[0] != 'x' && token[0] != 'X' && token[0] != 'f' && token[0] == 'F') {
+    if (token[0] != 'x' && token[0] != 'X' && token[0] != 'f' && token[0] != 'F') {
         instruction -> error = 1;
         instruction -> error_message = error_message;
         return 1;
@@ -1287,8 +1287,6 @@ instruction_format* find_instruction_format_by_opcode(int opcode, int funct3, in
 }
 
 instruction_format* get_instruction_format_from_instruction_internal (int opcode, int funct3, int funct7) {
-
-    instruction_format *format = 0;
 
     // if it's a floating point instruction, we can't use binary search, since in some cases, funct3 is ignored
     // and funct7 is checked, so we can't sort by opcode then funct3 then funct7
