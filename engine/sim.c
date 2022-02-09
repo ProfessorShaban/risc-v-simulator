@@ -417,6 +417,13 @@ int get_int(char *token, int *success)
 		index++;
         found_a_digit = 1;
 	}
+
+    // make sure the entire token has been consumed
+    if ((int) strlen(token) != index) {
+        *success = 0;
+        return 0;
+    }
+
     if (!found_a_digit) {
         *success = 0;
         return 0;
@@ -568,6 +575,23 @@ int get_immediate_or_offset (char *line, int *index, assembly_instruction *instr
     return 0;
 }
 
+// 0 for success, 1 for failure
+int check_end_of_instruction (char *line, int *index, assembly_instruction *instruction)
+{
+    int original_index = *index;
+    char token[128];
+    get_token(line, index, token);
+
+    if (token[0] != 0) {
+        instruction -> error = 1;
+        char* error_message = malloc(128);
+        sprintf(error_message, "unrecognized content at column %d", original_index + 1);
+        instruction -> error_message = error_message;
+        return 1;
+    }
+    return 0;
+}
+
 // 0 = success, 1 = error
 int build_instruction_m (assembly_instruction *instruction, char *line, int index)
 {
@@ -604,6 +628,8 @@ int build_instruction_r (instruction_format *format, assembly_instruction *instr
 		if (get_register (line, &index, instruction, &(instruction -> rs2), "unrecognized rs2")) return 1;
 	}
 
+    if (check_end_of_instruction(line, &index, instruction)) return 1;
+
 	// special cases
 	if (format -> operation == INSTRUCTION_FCVT_D_L) instruction -> rs2 = 2;
 	if (format -> operation == INSTRUCTION_FCVT_D_LU) instruction -> rs2 = 3;
@@ -629,6 +655,7 @@ int build_instruction_i (assembly_instruction *instruction, char *line, int inde
 	if (get_register (line, &index, instruction, &(instruction -> rs1), "unrecognized rs1")) return 1;
 	if (get_comma (line, &index, instruction)) return 1;
 	if (get_immediate (line, &index, instruction, &(instruction -> imm31), "unrecognized immediate")) return 1;
+    if (check_end_of_instruction(line, &index, instruction)) return 1;
 
     if (instruction -> imm31 > 2047 || instruction -> imm31 < -2048) {
         instruction -> error_message = "immediate value out of range";
@@ -654,6 +681,7 @@ int build_instruction_x (assembly_instruction *instruction, char *line, int inde
     if (get_register (line, &index, instruction, &(instruction -> rs1), "unrecognized rs1")) return 1;
     if (get_comma (line, &index, instruction)) return 1;
     if (get_immediate (line, &index, instruction, (int *) &(instruction -> rs2), "unrecognized immediate")) return 1;
+    if (check_end_of_instruction(line, &index, instruction)) return 1;
 
     instruction -> instruction =
 		instruction -> funct7 << 25 |
@@ -677,6 +705,7 @@ int build_instruction_s (assembly_instruction *instruction, char *line, int inde
     if (get_immediate (line, &index, instruction, &imm, "unrecognized immediate")) return 1;
     instruction -> imm31 = imm >> 5;
     instruction -> imm11 = imm & 0x1f;
+    if (check_end_of_instruction(line, &index, instruction)) return 1;
 
     instruction -> instruction =
         instruction -> imm31 << 25 |
@@ -698,6 +727,7 @@ int build_instruction_sb (assembly_instruction *instruction, char *line, int ind
     if (get_comma (line, &index, instruction)) return 1;
     int imm = 0;
     if (get_immediate_or_offset (line, &index, instruction, &imm, "unrecognized immediate", address, simi)) return 1;
+    if (check_end_of_instruction(line, &index, instruction)) return 1;
 
 	unsigned int bit11 = (imm & 0x400) >> 10;
 	unsigned int bit12 = (imm & 0X800) >> 11;
@@ -723,6 +753,7 @@ int build_instruction_u (assembly_instruction *instruction, char *line, int inde
     if (get_register (line, &index, instruction, &(instruction -> rd), "unrecognized rd")) return 1;
     if (get_comma (line, &index, instruction)) return 1;
 	if (get_immediate_or_offset (line, &index, instruction, &(instruction -> imm31), "unrecognized immediate", address, simi)) return 1;
+    if (check_end_of_instruction(line, &index, instruction)) return 1;
 
     instruction -> instruction =
         instruction -> imm31 << 12 |
@@ -739,6 +770,7 @@ int build_instruction_uj (assembly_instruction *instruction, char *line, int ind
     if (get_comma (line, &index, instruction)) return 1;
     int imm = 0;
 	if (get_immediate_or_offset (line, &index, instruction, &imm, "unrecognized immediate", address, simi)) return 1;
+    if (check_end_of_instruction(line, &index, instruction)) return 1;
 
 	unsigned int bits1to10 = (imm & 0x3ff);
 	unsigned int bit11 = (imm & 0x400) >> 10;
