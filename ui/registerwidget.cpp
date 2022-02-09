@@ -193,7 +193,7 @@ void RegisterWidget::showContextMenu(const QPoint &pos)
 {
     clickPos = pos;
 
-    int enable = registerNumber(clickPos.x(), clickPos.y()) != -1;
+    int enable = registerNumber(clickPos.x(), clickPos.y()) > 0;
 
     QMenu contextMenu(tr("RegisterContextMenu"), this);
 
