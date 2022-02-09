@@ -464,6 +464,6 @@ void CodeEditor::ensurePCVisible()
     MainWindow *theMainWindow = (MainWindow*) mainWindow;
     int pc = (int) get_pc(theMainWindow->sim);
     int lineNumber = addressToLineNumber(pc);
-    QTextCursor cursor(document()->findBlockByLineNumber(lineNumber-1));
+    QTextCursor cursor(document()->findBlockByLineNumber(lineNumber));
     setTextCursor(cursor);
 }
