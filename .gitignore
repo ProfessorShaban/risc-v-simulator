@@ -1,4 +1,4 @@
 build-RISCV-*
 ui/ui_*.h
+ui/qrc_*
 ui/RISCV.pro.user.*
-
