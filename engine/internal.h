@@ -1,4 +1,6 @@
 
+#include "sim.h"
+
 typedef struct label_reference {
     unsigned long long address;  // memory address
     int line_number;
