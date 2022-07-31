@@ -14,9 +14,11 @@ Building on Mac, Windows or Linux:
 To build from command line on Linux (Debian):
 
 Install Qt:
+- sudo apt-get update
 - sudo apt-get install build-essential libgl1-mesa-dev
 - sudo apt-get install qtcreator
-- sudo apt-get install qt5-default
+- sudo apt-get install qtbase5-dev qtchooser qt5-qmake qtbase5-dev-tools
+
 
 Build RISC-V simulator:
 - Get source and unzip
@@ -25,5 +27,3 @@ Build RISC-V simulator:
 - make
 
 Then to run: ./RISCV
-
-Known bug: when building from command line on Linux, run/step/animate toolbar buttons are blank
